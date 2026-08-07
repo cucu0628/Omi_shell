@@ -1,3 +1,6 @@
 import "features/lock" as LockFeature
 
-LockFeature.LockRoot {}
+LockFeature.LockRoot {
+    lockOnStartup: true
+    quitAfterUnlock: true
+}

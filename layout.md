@@ -231,9 +231,9 @@ Az alsóbb réteg nem importálhat magasabb réteget. A `core/` nem importál `f
 ## Stabil kompatibilitási pontok
 
 - `shell.qml` útvonala nem változik, mert az IPC parancsok erre hivatkoznak.
-- `LockShell.qml` útvonala nem változik, mert külön Quickshell processzként indul.
+- `LockShell.qml` megmarad kompatibilitási belépési pontként; a fő shell a lockscreent IPC-n aktiválja.
 - A feature popupokat a `shell.qml` közvetlen, névterezett importokkal példányosítja; nincs szükség gyökér wrapper fájlokra.
-- Az IPC targetek neve és metódusai kompatibilisek maradnak: `menu`, `launcher`, `clipboard`, `style`, `power`, `notifications`, `audio`, `about`.
+- Az IPC targetek neve és metódusai kompatibilisek maradnak: `menu`, `launcher`, `clipboard`, `style`, `power`, `lock`, `notifications`, `audio`, `about`.
 
 ## Migráció állapota
 

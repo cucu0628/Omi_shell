@@ -12,6 +12,7 @@ import "features/bar" as BarUi
 import "features/calendar" as CalendarFeature
 import "features/clipboard" as ClipboardFeature
 import "features/launcher" as LauncherFeature
+import "features/lock" as LockFeature
 import "features/media" as MediaFeature
 import "features/menu" as MenuFeature
 import "features/network" as NetworkFeature
@@ -258,6 +259,10 @@ ShellRoot {
         shellDir: shellRoot.shellDir
     }
 
+    LockFeature.LockRoot {
+        id: lockRoot
+    }
+
     NotificationFeature.NotificationsHost {
         id: notifications
         theme: theme
@@ -291,6 +296,7 @@ ShellRoot {
 
     App.ShellIpc {
         coordinator: popupCoordinator
+        lockProvider: lockRoot
         focusedScreenProvider: function() { return shellRoot.focusedScreen() }
         screenshotCaptureProvider: function(mode) { shellRoot.captureScreenshot(mode) }
     }

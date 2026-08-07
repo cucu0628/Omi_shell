@@ -8,6 +8,7 @@ QtObject {
     property bool ready: false
 
     function load() {
+        ready = false
         loader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/omi_shell/scripts/lockscreen-monitor\" current"]
         loader.running = true
     }

@@ -43,7 +43,7 @@ QtObject {
             { name: "TUI", icon: "", command: scriptsPath + "/floating-terminal " + scriptsPath + "/tui-remove" }
         ]},
         { name: "System", icon: "", sub: lockscreenMonitorItems.concat([
-            { name: "Lock", icon: "", command: "uwsm-app -- quickshell --path ~/.config/quickshell/omi_shell/LockShell.qml" },
+            { name: "Lock", icon: "", command: "quickshell ipc --path " + shellPath + " call lock lock" },
             { name: "Power Menu", icon: "󰐥", command: "quickshell ipc --path " + shellPath + " call power toggle" },
             { name: "About", icon: "", command: "quickshell ipc --path " + shellPath + " call about toggle" }
         ])}

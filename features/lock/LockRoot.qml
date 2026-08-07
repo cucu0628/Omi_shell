@@ -18,6 +18,8 @@ ShellRoot {
     property alias muted: themeController.muted
     property bool ready: false
     property bool closing: false
+    property bool lockOnStartup: false
+    property bool quitAfterUnlock: false
     property int revealStep: 0
     property var currentTime: new Date()
     property alias powerText: powerController.powerText
@@ -76,11 +78,30 @@ ShellRoot {
         unlockAnimationTimer.start()
     }
 
-    Component.onCompleted: {
+    function resetCycleState() {
+        introTimer.stop()
+        revealTimer.stop()
+        unlockAnimationTimer.stop()
+        unlockExitTimer.stop()
+        ready = false
+        closing = false
+        revealStep = 0
+        currentTime = new Date()
+        authentication.reset()
+    }
+
+    function lock() {
+        if (sessionLock.locked || closing) return
+        resetCycleState()
         loadThemeColors()
         refreshPowerStatus()
         settingsController.load()
-        introTimer.start()
+        sessionLock.locked = true
+        introTimer.restart()
+    }
+
+    Component.onCompleted: {
+        if (lockOnStartup) lock()
     }
 
     LockUi.LockThemeController {
@@ -102,14 +123,14 @@ ShellRoot {
 
     Timer {
         interval: 1000
-        running: true
+        running: sessionLock.locked
         repeat: true
         onTriggered: currentTime = new Date()
     }
 
     Timer {
         interval: 30000
-        running: true
+        running: sessionLock.locked
         repeat: true
         onTriggered: refreshPowerStatus()
     }
@@ -146,12 +167,15 @@ ShellRoot {
     Timer {
         id: unlockExitTimer
         interval: 120
-        onTriggered: Qt.quit()
+        onTriggered: {
+            if (root.quitAfterUnlock) Qt.quit()
+            else root.resetCycleState()
+        }
     }
 
     WlSessionLock {
         id: sessionLock
-        locked: true
+        locked: false
 
         onSecureChanged: {
             if (root.closing && !secure) unlockExitTimer.restart()

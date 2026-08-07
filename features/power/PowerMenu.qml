@@ -21,7 +21,7 @@ PanelWindow {
         "label": "MAMORU",
         "sub": "守る / quiet screen",
         "icon": "",
-        "command": "uwsm-app -- quickshell --path ~/.config/quickshell/omi_shell/LockShell.qml",
+        "command": "quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call lock lock",
         "confirm": false
     }, {
         "name": "Suspend",

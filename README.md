@@ -159,10 +159,10 @@ bind = SHIFT, PRINT, exec, $omi screenshot region
 
 ### Lock screen
 
-The lock screen runs as a separate Quickshell process:
+The lock screen is hosted by the main shell and activated over IPC:
 
 ```bash
-uwsm-app -- quickshell --path ~/.config/quickshell/omi_shell/LockShell.qml
+quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call lock lock
 ```
 
 It creates a secure `WlSessionLock` surface on every monitor. One monitor shows
@@ -236,7 +236,7 @@ Add the relevant include or import to each application's configuration.
 ```text
 omi_shell/
 ├── shell.qml              Main shell entry point and composition
-├── LockShell.qml          Separate lock-screen entry point
+├── LockShell.qml          Standalone lock-screen compatibility entry point
 ├── app/                   Popup lifecycle, coordination, and public IPC
 ├── core/                  Platform and shared state controllers
 ├── features/              Self-contained shell features and surfaces

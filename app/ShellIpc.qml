@@ -6,6 +6,7 @@ Item {
     id: root
 
     required property var coordinator
+    required property var lockProvider
     required property var focusedScreenProvider
     required property var screenshotCaptureProvider
     property string pendingAboutAction: ""
@@ -85,6 +86,12 @@ Item {
             coordinator.setPowerMenuOpen(true, coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider())
         }
         function close(): void { coordinator.setPowerMenuOpen(false) }
+    }
+
+    IpcHandler {
+        target: "lock"
+
+        function lock(): void { lockProvider.lock() }
     }
 
     IpcHandler {

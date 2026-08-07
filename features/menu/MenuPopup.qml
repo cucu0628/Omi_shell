@@ -48,7 +48,7 @@ PanelWindow {
     }, {
         "name": "Lock",
         "icon": "",
-        "command": "uwsm-app -- quickshell --path ~/.config/quickshell/omi_shell/LockShell.qml",
+        "command": "quickshell ipc --path " + shellPath + " call lock lock",
         "path": "System"
     }, {
         "name": "Power",

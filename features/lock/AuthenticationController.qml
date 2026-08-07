@@ -13,6 +13,14 @@ QtObject {
 
     signal succeeded()
 
+    function reset() {
+        password = ""
+        submittedPassword = ""
+        unlockInProgress = false
+        failed = false
+        statusText = "Enter password"
+    }
+
     function tryUnlock() {
         if (password === "" || unlockInProgress) return
         submittedPassword = password
