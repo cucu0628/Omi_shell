@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for app in blueman-manager blueberry systemsettings; do
+  if command -v "$app" >/dev/null 2>&1; then
+    if [[ $app == systemsettings ]]; then
+      exec systemsettings kcm_bluetooth
+    fi
+    exec "$app"
+  fi
+done
+printf 'No graphical Bluetooth manager found. Install blueman.\n' >&2
+exit 1

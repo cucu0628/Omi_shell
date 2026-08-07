@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+
+dir="$HOME/.local/share/applications/omi-tui"
+mkdir -p "$dir"
+require_fzf
+choice=$(find "$dir" -maxdepth 1 -type f -name 'omi-tui-*.desktop' -printf '%f\n' 2>/dev/null | fzf_one "remove TUI launcher" "sed -n '1,80p' '$dir'/{} 2>/dev/null")
+[[ -n $choice ]] || die "no TUI launcher selected"
+rm -f "$dir/$choice"
+update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
+printf 'Removed: %s\n' "$choice"
+pause

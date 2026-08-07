@@ -1,0 +1,77 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+import "." as NotificationUi
+
+PanelWindow {
+    id: notifyWindow
+
+    property var theme: null
+    property alias dnd: controller.dnd
+    property alias currentNotification: controller.currentNotification
+    property alias toastVisible: controller.toastVisible
+    property alias menuOpened: controller.menuOpened
+    property alias history: controller.history
+    property alias unreadCount: controller.unreadCount
+    readonly property alias hasToast: controller.hasToast
+    readonly property bool menuExpanded: center.transitionActive
+
+    function setMenuOpen(open, targetScreen) {
+        if (targetScreen) screen = targetScreen
+        if (open && controller.toastVisible) {
+            toast.animateTransitions = false
+            controller.hideToastForMenu()
+            toastAnimationReset.restart()
+        }
+        controller.setMenuOpen(open)
+    }
+
+    function toggleMenu(targetScreen) {
+        setMenuOpen(!(menuOpened && (!targetScreen || screen === targetScreen)), targetScreen)
+    }
+
+    visible: menuExpanded || controller.toastVisible || toast.opacity > 0
+    implicitWidth: 360
+    implicitHeight: 132
+    color: "transparent"
+    anchors { top: true; right: true; bottom: menuExpanded; left: menuExpanded }
+    margins { top: menuExpanded ? 0 : 34; right: menuExpanded ? 0 : 14 }
+    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.namespace: "quickshell.notifications"
+    WlrLayershell.exclusiveZone: -1
+
+    NotificationUi.NotificationsController {
+        id: controller
+    }
+
+    Timer { id: toastAnimationReset; interval: 0; onTriggered: toast.animateTransitions = true }
+
+    NotificationUi.NotificationToast {
+        id: toast
+        anchors.right: parent.right
+        y: 0
+        theme: notifyWindow.theme
+        notification: controller.currentNotification
+        shown: controller.toastVisible && !controller.menuOpened
+        onActivated: controller.activateNotification()
+        onDismissed: controller.closeToast(true)
+        onHoverChanged: (hovered) => {
+            if (hovered) controller.pauseToastTimer()
+            else controller.resumeToastTimer()
+        }
+    }
+
+    NotificationUi.NotificationCenter {
+        id: center
+        anchors.fill: parent
+        theme: notifyWindow.theme
+        opened: controller.menuOpened
+        dnd: controller.dnd
+        history: controller.history
+        onCloseRequested: controller.setMenuOpen(false)
+        onDndToggleRequested: controller.dnd = !controller.dnd
+        onClearRequested: controller.clearHistory()
+        onItemDeleteRequested: entryId => controller.removeHistory(entryId, true)
+        onItemActivated: entryId => controller.activateHistoryEntry(entryId, null)
+    }
+}

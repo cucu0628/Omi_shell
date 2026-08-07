@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base="$HOME/.config/quickshell/omi_shell"
+file="$base/current-weather-location"
+current="Budapest"
+
+if [[ -r "$file" ]]; then
+  current=$(<"$file")
+fi
+
+if [[ -n "${WEATHER_LOCATION:-}" ]]; then
+  current="$WEATHER_LOCATION"
+fi
+
+printf '%s\n' 'Weather location'
+printf '%s\n' '----------------'
+printf 'Current: %s\n\n' "$current"
+printf '%s' 'Enter city/location [Budapest]: '
+read -r location || true
+location=${location:-Budapest}
+
+mkdir -p "$base"
+printf '%s\n' "$location" > "$file"
+
+printf '\nSaved: %s\n' "$location"
+printf '%s\n' 'Open the weather popup again to refresh the data.'
+printf '\n%s' 'Press Enter to close...'
+read -r _ || true

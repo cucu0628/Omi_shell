@@ -1,0 +1,208 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+import "." as LockUi
+
+ShellRoot {
+    id: root
+
+    property alias password: authentication.password
+    property alias submittedPassword: authentication.submittedPassword
+    property alias unlockInProgress: authentication.unlockInProgress
+    property alias failed: authentication.failed
+    property alias statusText: authentication.statusText
+    property alias background: themeController.background
+    property alias foreground: themeController.foreground
+    property alias accent: themeController.accent
+    property alias surface: themeController.surface
+    property alias muted: themeController.muted
+    property bool ready: false
+    property bool closing: false
+    property int revealStep: 0
+    property var currentTime: new Date()
+    property alias powerText: powerController.powerText
+    property alias inputMonitorName: settingsController.inputMonitorName
+    property alias settingsReady: settingsController.ready
+
+    readonly property string alertColor: "#d7472f"
+    readonly property string userName: Quickshell.env("USER") || "user"
+    readonly property var dayNames: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+    readonly property var dayKanji: ["月", "火", "水", "木", "金", "土", "日"]
+    readonly property var monthNames: ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+
+    readonly property int weekdayIndex: (currentTime.getDay() + 6) % 7
+    readonly property string timeText: two(currentTime.getHours()) + ":" + two(currentTime.getMinutes())
+    readonly property string secondsText: two(currentTime.getSeconds())
+    readonly property string weekdayText: dayNames[weekdayIndex]
+    readonly property string weekdayKanji: dayKanji[weekdayIndex] + "曜日"
+    readonly property string dateText: monthNames[currentTime.getMonth()] + " " + currentTime.getDate() + "  //  " + currentTime.getFullYear()
+    readonly property string railDateText: weekdayText.substring(0, 3) + " " + two(currentTime.getDate()) + " "
+        + monthNames[currentTime.getMonth()].substring(0, 3) + " " + currentTime.getFullYear()
+    readonly property real dayProgress: (currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds()) / 86400
+
+    readonly property string effectiveInputMonitorName: inputMonitorName !== ""
+        ? inputMonitorName
+        : (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
+
+    function two(value) {
+        return value < 10 ? "0" + value : "" + value
+    }
+
+    function updateColors(text) {
+        themeController.updateColors(text)
+    }
+
+    function loadThemeColors() {
+        themeController.loadThemeColors()
+    }
+
+    function refreshPowerStatus() {
+        powerController.refreshPowerStatus()
+    }
+
+    function tryUnlock() {
+        authentication.tryUnlock()
+    }
+
+    function clearPassword() {
+        if (unlockInProgress) return
+        password = ""
+    }
+
+    function finishUnlock() {
+        if (closing) return
+        closing = true
+        statusText = "Unlocked"
+        unlockAnimationTimer.start()
+    }
+
+    Component.onCompleted: {
+        loadThemeColors()
+        refreshPowerStatus()
+        settingsController.load()
+        introTimer.start()
+    }
+
+    LockUi.LockThemeController {
+        id: themeController
+    }
+
+    LockUi.PowerStatusController {
+        id: powerController
+    }
+
+    LockUi.LockScreenSettingsController {
+        id: settingsController
+    }
+
+    LockUi.AuthenticationController {
+        id: authentication
+        onSucceeded: root.finishUnlock()
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: currentTime = new Date()
+    }
+
+    Timer {
+        interval: 30000
+        running: true
+        repeat: true
+        onTriggered: refreshPowerStatus()
+    }
+
+    Timer {
+        id: introTimer
+        interval: 80
+        onTriggered: {
+            root.ready = true
+            revealTimer.start()
+        }
+    }
+
+    // Lépcsőzetes megjelenés: minden ütem egy réteget hoz be a felületen.
+    Timer {
+        id: revealTimer
+        interval: 130
+        repeat: true
+        onTriggered: {
+            root.revealStep += 1
+            if (root.revealStep >= 6) revealTimer.stop()
+        }
+    }
+
+    Timer {
+        id: unlockAnimationTimer
+        interval: 640
+        onTriggered: {
+            sessionLock.locked = false
+            if (!sessionLock.secure) unlockExitTimer.start()
+        }
+    }
+
+    Timer {
+        id: unlockExitTimer
+        interval: 120
+        onTriggered: Qt.quit()
+    }
+
+    WlSessionLock {
+        id: sessionLock
+        locked: true
+
+        onSecureChanged: {
+            if (root.closing && !secure) unlockExitTimer.restart()
+        }
+
+        WlSessionLockSurface {
+            id: lockSurface
+
+            readonly property string surfaceName: screen ? screen.name : ""
+            readonly property bool isInputScreen: Quickshell.screens.length <= 1
+                || (root.settingsReady && screen && screen.name === root.effectiveInputMonitorName)
+
+            color: root.background
+
+            LockUi.LockBackground {
+                anchors.fill: parent
+                lockRoot: root
+            }
+
+            LockUi.LockChrome {
+                anchors.fill: parent
+                lockRoot: root
+                screenName: lockSurface.surfaceName
+                primary: lockSurface.isInputScreen
+            }
+
+            Loader {
+                anchors.fill: parent
+                active: lockSurface.isInputScreen
+
+                sourceComponent: LockUi.LockCard {
+                    lockRoot: root
+                    screenName: lockSurface.surfaceName
+                }
+            }
+
+            Loader {
+                anchors.fill: parent
+                active: root.settingsReady && !lockSurface.isInputScreen
+
+                sourceComponent: LockUi.AmbientLockView {
+                    lockRoot: root
+                    screenName: lockSurface.surfaceName
+                }
+            }
+
+            LockUi.LockShutter {
+                anchors.fill: parent
+                lockRoot: root
+                z: 100
+            }
+        }
+    }
+}

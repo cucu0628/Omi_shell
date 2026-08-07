@@ -1,0 +1,59 @@
+#!/bin/sh
+
+set -eu
+
+base=${XDG_CONFIG_HOME:-"$HOME/.config"}/quickshell/omi_shell
+config="$base/lockscreen-monitor"
+
+monitors() {
+    hyprctl monitors -j 2>/dev/null | jq -r '.[].name'
+}
+
+current() {
+    saved=""
+    if [ -r "$config" ]; then
+        IFS= read -r saved < "$config" || true
+    fi
+
+    if [ -n "$saved" ] && monitors | while IFS= read -r monitor; do
+        [ "$monitor" = "$saved" ] && exit 0
+    done; then
+        printf '%s\n' "$saved"
+        return
+    fi
+
+    focused=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused) | .name' | sed -n '1p')
+    if [ -n "$focused" ]; then
+        printf '%s\n' "$focused"
+    else
+        monitors | sed -n '1p'
+    fi
+}
+
+case ${1:-list} in
+    current)
+        current
+        ;;
+    list)
+        selected=$(current)
+        monitors | while IFS= read -r monitor; do
+            label=$monitor
+            [ "$monitor" = "$selected" ] && label="$monitor [current]"
+            printf '%s|%s\n' "$label" "$monitor"
+        done
+        ;;
+    set)
+        requested=${2:-}
+        [ -n "$requested" ] || exit 2
+        if monitors | while IFS= read -r monitor; do
+            [ "$monitor" = "$requested" ] && exit 0
+        done; then
+            printf '%s\n' "$requested" > "$config"
+        else
+            exit 2
+        fi
+        ;;
+    *)
+        exit 2
+        ;;
+esac

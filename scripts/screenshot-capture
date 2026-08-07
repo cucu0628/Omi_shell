@@ -1,0 +1,167 @@
+#!/bin/sh
+
+set -u
+
+mode=${1:-smart}
+
+missing=""
+for command in grim slurp wayfreeze magick hyprctl jq; do
+    if ! command -v "$command" >/dev/null 2>&1; then
+        missing="$missing $command"
+    fi
+done
+
+if [ -n "$missing" ]; then
+    notify-send -u critical "Screenshot unavailable" "Install the missing tools:$missing"
+    exit 1
+fi
+
+background="191724"
+accent="ebbcba"
+theme_name=$(cat "$HOME/.config/quickshell/omi_shell/current-theme" 2>/dev/null || true)
+theme_file="$HOME/.config/quickshell/omi_shell/themes/$theme_name/theme.conf"
+if [ -r "$theme_file" ]; then
+    while IFS='=' read -r key value; do
+        value=${value#\#}
+        case "$key" in
+            BACKGROUND) background=$value ;;
+            ACCENT) accent=$value ;;
+        esac
+    done < "$theme_file"
+fi
+
+freeze_pid=""
+freeze_ready=""
+snapshot=""
+monitors=""
+canvas_x=0
+canvas_y=0
+
+prepare_frozen_snapshot() {
+    if [ -z "$monitors" ]; then
+        monitors=$(hyprctl monitors -j)
+    fi
+    canvas_x=$(printf '%s' "$monitors" | jq '[.[].x] | min')
+    canvas_y=$(printf '%s' "$monitors" | jq '[.[].y] | min')
+
+    freeze_ready=$(mktemp)
+    rm -f "$freeze_ready"
+    wayfreeze --hide-cursor --after-freeze-cmd "touch '$freeze_ready'" --after-freeze-timeout 0 &
+    freeze_pid=$!
+
+    attempts=0
+    while [ ! -e "$freeze_ready" ]; do
+        if ! kill -0 "$freeze_pid" 2>/dev/null || [ "$attempts" -ge 200 ]; then
+            notify-send -u critical "Screenshot failed" "The screen freezer did not become ready."
+            exit 1
+        fi
+        attempts=$((attempts + 1))
+        sleep 0.01
+    done
+    rm -f "$freeze_ready"
+    freeze_ready=""
+
+    snapshot=$(mktemp --suffix=.ppm)
+    if ! grim -s 1 -t ppm "$snapshot"; then
+        notify-send -u critical "Screenshot failed" "Could not capture the frozen desktop."
+        exit 1
+    fi
+}
+
+stop_freeze() {
+    if [ -n "$freeze_pid" ]; then
+        kill "$freeze_pid" 2>/dev/null || true
+        wait "$freeze_pid" 2>/dev/null || true
+        freeze_pid=""
+    fi
+}
+
+cleanup() {
+    stop_freeze
+    [ -n "$freeze_ready" ] && rm -f "$freeze_ready"
+    [ -n "$snapshot" ] && rm -f "$snapshot"
+}
+
+trap cleanup EXIT HUP INT TERM
+
+if command -v xdg-user-dir >/dev/null 2>&1; then
+    pictures_dir=$(xdg-user-dir PICTURES 2>/dev/null || true)
+fi
+pictures_dir=${pictures_dir:-"$HOME/Pictures"}
+output_dir="$pictures_dir/Screenshots"
+mkdir -p "$output_dir"
+
+timestamp=$(date '+%Y-%m-%d_%H-%M-%S_%3N')
+output="$output_dir/screenshot_${timestamp}.png"
+
+case "$mode" in
+    smart)
+        monitors=$(hyprctl monitors -j)
+        window_boxes=$(hyprctl clients -j | jq -r --argjson monitors "$monitors" '
+                [$monitors[].activeWorkspace.id, $monitors[].specialWorkspace.id] as $visible
+                | .[]
+                | select(.mapped == true and .hidden == false)
+                | select(.size[0] > 0 and .size[1] > 0)
+                | select(.workspace.id as $id | $visible | index($id) != null)
+                | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1]) \(.title | gsub("[\\r\\n]"; " "))"
+            ')
+        prepare_frozen_snapshot
+        geometry=$(printf '%s' "$window_boxes" | slurp -o -d -F monospace -b "${background}c4" -c "${accent}ff" -s "${accent}2e" -B "${accent}0a" -w 3) || exit 0
+        ;;
+    window)
+        geometry=$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')
+        ;;
+    workspace)
+        geometry=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | "\(.x),\(.y) \((.width / .scale) | floor)x\((.height / .scale) | floor)"')
+        ;;
+    region)
+        prepare_frozen_snapshot
+        geometry=$(slurp -d -F monospace -b "${background}c4" -c "${accent}ff" -s "${accent}2e" -w 3) || exit 0
+        ;;
+    *)
+        notify-send -u critical "Screenshot failed" "Unknown capture mode: $mode"
+        exit 2
+        ;;
+esac
+
+if [ -z "$geometry" ]; then
+    rm -f "$output"
+    exit 1
+fi
+
+stop_freeze
+
+if [ -n "$snapshot" ]; then
+    coordinates=${geometry%% *}
+    dimensions=${geometry#* }
+    selection_x=${coordinates%,*}
+    selection_y=${coordinates#*,}
+    selection_width=${dimensions%x*}
+    selection_height=${dimensions#*x}
+    crop_x=$((selection_x - canvas_x))
+    crop_y=$((selection_y - canvas_y))
+
+    if ! magick "$snapshot" -crop "${selection_width}x${selection_height}+${crop_x}+${crop_y}" +repage "$output"; then
+        rm -f "$output"
+        exit 1
+    fi
+elif ! grim -g "$geometry" "$output"; then
+    rm -f "$output"
+    exit 1
+fi
+
+if [ ! -s "$output" ]; then
+    rm -f "$output"
+    exit 1
+fi
+
+if command -v wl-copy >/dev/null 2>&1; then
+    wl-copy --type image/png < "$output"
+fi
+
+(
+    action=$(notify-send -a "Omi Shell" -i "$output" -A "default=Edit with Satty" "Screenshot captured" "Saved to $output and copied to the clipboard." || true)
+    if [ "$action" = "default" ] && command -v satty >/dev/null 2>&1; then
+        satty --filename "$output" --output-filename "$output" >/dev/null 2>&1 &
+    fi
+) >/dev/null 2>&1 &

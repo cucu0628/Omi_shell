@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for app in nm-connection-editor plasmawindowed; do
+  if command -v "$app" >/dev/null 2>&1; then
+    if [[ $app == plasmawindowed ]]; then
+      exec plasmawindowed org.kde.plasma.networkmanagement
+    fi
+    exec "$app"
+  fi
+done
+printf 'No graphical network editor found. Install nm-connection-editor.\n' >&2
+exit 1

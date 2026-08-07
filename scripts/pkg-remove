@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=lib.sh
+. "$SCRIPT_DIR/lib.sh"
+
+if (( $# > 0 )); then
+  packages=("$@")
+else
+  require_fzf
+  mapfile -t packages < <(pacman -Qqe | sort -u | fzf_many "remove packages" "pacman -Qi {} 2>/dev/null || true")
+fi
+
+(( ${#packages[@]} > 0 )) || die "no package selected"
+printf 'Removing: %s\n' "${packages[*]}"
+sudo pacman -Rns "${packages[@]}"
+pause

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+base="$HOME/.config/quickshell/omi_shell"
+theme_name=""
+background=""
+[[ -r "$base/current-theme" ]] && theme_name=$(<"$base/current-theme")
+[[ -r "$base/current-wallpaper" ]] && background=$(<"$base/current-wallpaper")
+printf 'Current theme\n-------------\n'
+if [[ -n $theme_name && -d "$base/themes/$theme_name" ]]; then
+  printf '%s\n' "$base/themes/$theme_name"
+else
+  printf 'No local quickshell theme selected.\n'
+fi
+printf '\nCurrent background\n------------------\n'
+if [[ -n $background ]]; then
+  printf '%s\n' "$background"
+else
+  printf 'No local wallpaper selected.\n'
+fi
+printf '\nColors\n------\n'
+conf="$base/themes/$theme_name/theme.conf"
+if [[ -r $conf ]]; then
+  grep -E 'BACKGROUND|FOREGROUND|ACCENT|SURFACE|MUTED' "$conf" || true
+else
+  printf 'No theme.conf found. Default shell colors are active.\n'
+fi
+pause() { printf '\nPress Enter to close...'; read -r _ || true; }
+pause

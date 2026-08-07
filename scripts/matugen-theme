@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base="$HOME/.config/quickshell/omi_shell"
+wallpaper=${1:-}
+fallback="$base/wallpapers/omi-mountain-tower.png"
+out_dir="$base/themes/dynamic-matugen"
+out="$out_dir/theme.conf"
+
+[[ -n $wallpaper && -r $wallpaper ]] || wallpaper=""
+[[ -n $wallpaper ]] || { [[ -r "$base/current-wallpaper" ]] && wallpaper=$(<"$base/current-wallpaper"); }
+[[ -r $wallpaper ]] || wallpaper="$fallback"
+
+background="#15130c"
+foreground="#e8e2d4"
+accent="#d8c770"
+surface="#222017"
+muted="#ccc6b5"
+
+if command -v matugen >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && [[ -r $wallpaper ]]; then
+  json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-tonal-spot --prefer saturation 2>/dev/null || true)
+  if [[ -n $json ]]; then
+    background=$(jq -r '.colors.background.default.color // .colors.surface.default.color // empty' <<<"$json")
+    foreground=$(jq -r '.colors.on_surface.default.color // .colors.on_background.default.color // empty' <<<"$json")
+    accent=$(jq -r '.colors.primary.default.color // .colors.secondary.default.color // empty' <<<"$json")
+    surface=$(jq -r '.colors.surface_container.default.color // .colors.surface.default.color // empty' <<<"$json")
+    muted=$(jq -r '.colors.on_surface_variant.default.color // .colors.outline.default.color // empty' <<<"$json")
+  fi
+fi
+
+[[ $background == \#* ]] || background="#15130c"
+[[ $foreground == \#* ]] || foreground="#e8e2d4"
+[[ $accent == \#* ]] || accent="#d8c770"
+[[ $surface == \#* ]] || surface="#222017"
+[[ $muted == \#* ]] || muted="#ccc6b5"
+
+mkdir -p "$out_dir"
+{
+  printf 'NAME=Dynamic / Matugen\n'
+  printf 'BACKGROUND=%s\n' "$background"
+  printf 'FOREGROUND=%s\n' "$foreground"
+  printf 'ACCENT=%s\n' "$accent"
+  printf 'SURFACE=%s\n' "$surface"
+  printf 'MUTED=%s\n' "$muted"
+} > "$out"
+
+cat "$out"

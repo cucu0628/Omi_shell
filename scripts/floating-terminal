@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+quote_args() {
+  local quoted=""
+  local arg
+  for arg in "$@"; do
+    printf -v arg '%q' "$arg"
+    quoted+="$arg "
+  done
+  printf '%s' "${quoted% }"
+}
+
+lua_quote() {
+  local value=$1
+  value=${value//\\/\\\\}
+  value=${value//\"/\\\"}
+  value=${value//$'\n'/\\n}
+  value=${value//$'\r'/\\r}
+  printf '"%s"' "$value"
+}
+
+if (( $# > 0 )); then
+  run_cmd="$(quote_args "$@")"
+else
+  run_cmd="${SHELL:-bash}"
+fi
+
+shell_cmd="exec $run_cmd"
+if ! command -v kitty >/dev/null 2>&1; then
+  printf 'Kitty is required to run this action.\n' >&2
+  exit 1
+fi
+
+terminal_exec="kitty --class omi-floating-terminal -e bash -lc $(printf '%q' "$shell_cmd")"
+
+if command -v hyprctl >/dev/null 2>&1; then
+  hyprctl dispatch "hl.dsp.exec_cmd($(lua_quote "$terminal_exec"), { float = true, size = { 1020, 650 }, center = true })" >/dev/null
+else
+  bash -lc "$terminal_exec" >/dev/null 2>&1 &
+fi
