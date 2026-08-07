@@ -45,6 +45,7 @@ Item {
             Canvas {
                 id: trayArrow
                 anchors.centerIn: parent
+                anchors.verticalCenterOffset: -1
                 width: 12
                 height: 12
                 property color iconColor: trayMouse.containsMouse && root.hasItems ? root.theme.accent : (root.hasItems ? root.theme.foreground : "#9f8f7c")
@@ -89,6 +90,7 @@ Item {
 
                     Image {
                         anchors.centerIn: parent
+                        anchors.verticalCenterOffset: -1
                         width: 16
                         height: 16
                         source: trayItem.modelData.icon || ""
@@ -100,6 +102,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
+                        anchors.verticalCenterOffset: -1
                         text: "󰀻"
                         font.family: "Symbols Nerd Font Mono"
                         font.pixelSize: 13
