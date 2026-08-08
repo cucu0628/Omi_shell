@@ -27,7 +27,11 @@ QtObject {
             { name: "Network", icon: "", command: "quickshell ipc --path " + shellPath + " call network toggle" },
             { name: "Bluetooth", icon: "󰂯", command: scriptsPath + "/launch-bluetooth" },
             { name: "Weather Location", icon: "󰖕", command: scriptsPath + "/floating-terminal " + scriptsPath + "/weather-location" },
-            { name: "Power Profile", icon: "󱐋", dynamic: { cmd: "powerprofilesctl list | grep -o '^  [a-z-]*' | sed 's/^  //'", icon: "󱐋", prefix: "powerprofilesctl set" } },
+            { name: "Power Profile", icon: "󱐋", dynamic: {
+                cmd: "current=$(powerprofilesctl get) || exit 1; for profile in performance balanced power-saver; do case $profile in performance) label=Performance;; balanced) label=Balanced;; power-saver) label='Power Saver';; esac; [ \"$profile\" = \"$current\" ] && label=\"$label (Active)\"; printf '%s|%s\\n' \"$label\" \"$profile\"; done",
+                icon: "󱐋",
+                prefix: "powerprofilesctl set"
+            }},
             { name: "Hyprland Config", icon: "", command: "xdg-open ~/.config/hypr" },
             { name: "Network Editor", icon: "󰤨", command: "nm-connection-editor" }
         ]},
