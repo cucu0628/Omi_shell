@@ -21,23 +21,23 @@ Item {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -8
         width: Math.min(parent.width * 0.72, 660)
-        spacing: 28
+        spacing: 30
         opacity: ambientView.opened ? 1 : 0
-        scale: ambientView.opened ? 1 : 0.985
+        scale: ambientView.opened ? 1 : 0.99
 
         transform: Translate {
-            y: ambientView.opened ? 0 : 16
+            y: ambientView.opened ? 0 : 14
             Behavior on y {
-                NumberAnimation { duration: ambientView.lockRoot.closing ? 180 : 520; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: ambientView.lockRoot.closing ? 200 : 560; easing.type: Easing.OutCubic }
             }
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: ambientView.lockRoot.closing ? 150 : 460; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: ambientView.lockRoot.closing ? 170 : 500; easing.type: Easing.OutCubic }
         }
 
         Behavior on scale {
-            NumberAnimation { duration: ambientView.lockRoot.closing ? 180 : 520; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: ambientView.lockRoot.closing ? 200 : 560; easing.type: Easing.OutCubic }
         }
 
         LockUi.LockClock {
@@ -45,12 +45,12 @@ Item {
             lockRoot: ambientView.lockRoot
             centered: true
             timeSize: Math.round(Math.min(146, ambientView.width * 0.1))
-            barWidth: 260
+            barWidth: 240
         }
 
         LockUi.LockSeal {
             anchors.horizontalCenter: parent.horizontalCenter
-            diameter: 128
+            diameter: 122
             lockRoot: ambientView.lockRoot
             busy: ambientView.lockRoot.unlockInProgress
             alert: ambientView.lockRoot.failed
@@ -58,17 +58,17 @@ Item {
 
         Column {
             width: parent.width
-            spacing: 10
+            spacing: 11
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: ambientView.stateText
                 color: ambientView.lockRoot.failed ? ambientView.lockRoot.alertColor : ambientView.lockRoot.foreground
-                font.pixelSize: 18
+                font.pixelSize: 17
                 font.letterSpacing: 4
                 font.weight: Font.DemiBold
 
-                Behavior on color { ColorAnimation { duration: 140 } }
+                Behavior on color { ColorAnimation { duration: 160 } }
             }
 
             Text {
@@ -77,14 +77,6 @@ Item {
                 color: ambientView.lockRoot.accent
                 font.pixelSize: 11
                 font.letterSpacing: 3
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: Math.min(parent.width * 0.44, 260)
-                height: 1
-                color: ambientView.lockRoot.accent
-                opacity: 0.3
             }
 
             // A begépelt karakterek a többi kijelzőn is látszanak.
@@ -104,10 +96,10 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
 
                         NumberAnimation on scale {
-                            from: 0.2
+                            from: 0.3
                             to: 1
-                            duration: 180
-                            easing.type: Easing.OutBack
+                            duration: 200
+                            easing.type: Easing.OutCubic
                         }
                     }
                 }
@@ -115,11 +107,11 @@ Item {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "// type anywhere  ·  unlock on " + ambientView.lockRoot.effectiveInputMonitorName
+                text: "unlock on " + ambientView.lockRoot.effectiveInputMonitorName
                 color: ambientView.lockRoot.muted
-                font.family: "monospace"
                 font.pixelSize: 10
-                font.letterSpacing: 1
+                font.letterSpacing: 1.4
+                opacity: 0.75
             }
         }
     }

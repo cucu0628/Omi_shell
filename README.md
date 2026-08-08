@@ -178,6 +178,55 @@ Authentication uses the PAM service named `hyprlock`. A working
 `/etc/pam.d/hyprlock` configuration is therefore required before relying on the
 lock screen.
 
+### Login screen (SDDM)
+
+`sddm/omi-ink/` is an SDDM greeter theme that reuses the lock-screen visual
+language: the same ensō background, shoji shutter, seal, panel, and palette.
+It adds the greeter-only controls: user picker, session picker, keyboard
+layout, and the power actions.
+
+```bash
+~/.config/quickshell/omi_shell/scripts/sddm-install --preview            # test run, no root
+sudo ~/.config/quickshell/omi_shell/scripts/sddm-install --default --layout
+```
+
+`scripts/sddm-theme` regenerates `theme.conf` from the active shell palette and
+runs as part of the theme switch, so the greeter follows the selected theme
+automatically. It writes both the repository copy and the installed one at
+`/usr/share/sddm/themes/omi-ink/theme.conf`, which `sddm-install` chowns to the
+installing user for exactly that purpose. Everything else in the installed
+theme stays root-owned; re-run `sudo sddm-install` after changing the QML.
+
+SDDM must be the active display manager. Arch installs that use
+`plasma-login-manager` (`plasmalogin.service`) cannot use SDDM themes at all:
+
+```bash
+sudo systemctl disable plasmalogin.service
+sudo systemctl enable sddm.service
+```
+
+### Greeter monitors
+
+The greeter opens one window per output and the theme decides which one gets
+the login card; the rest show the ambient view. The choice comes from
+`inputScreen` in `theme.conf`, which `scripts/sddm-theme` fills in from
+`lockscreen-monitor`, so the greeter and the lock screen use the same monitor.
+An empty or unplugged name falls back to the primary screen, so exactly one
+window always shows the card.
+
+Do not rely on SDDM's own primary-screen notion for this: under the Wayland
+greeter it follows the compositor's output order. Keyboard focus does follow
+it, though, and that is not something the theme can move, so the ambient view
+also accepts typing and Enter — the password can be entered from either
+monitor.
+
+For X11 greeters only (`DisplayServer=x11`), SDDM starts its own X server that
+knows nothing about the compositor's layout, so outputs can land in the wrong
+order or position. `scripts/sddm-layout` reads the live Hyprland layout and
+writes an `Xsetup` that replays it through `xrandr`; `sddm-install --layout`
+installs it as `/etc/sddm/Xsetup` behind a `[X11] DisplayCommand` drop-in.
+Arch's `zz-wayland.conf` default (`DisplayServer=wayland`) makes this a no-op.
+
 ## Appearance
 
 Keshiki Studio reads wallpapers from `$HOME/Pictures/wallpapers` and themes
@@ -242,6 +291,7 @@ omi_shell/
 ├── features/              Self-contained shell features and surfaces
 ├── ui/                    Reusable feature-independent QML components
 ├── scripts/               External system and theme helpers
+├── sddm/                  SDDM greeter theme matching the lock screen
 ├── themes/                Declarative color palettes
 └── assets/                Static visual assets
 ```

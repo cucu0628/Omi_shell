@@ -20,6 +20,8 @@ ShellRoot {
     property bool closing: false
     property bool lockOnStartup: false
     property bool quitAfterUnlock: false
+    // A zárolt ciklus egyetlen igazságforrása: ez hajtja a WlSessionLockot és az ütemezőket is.
+    property bool sessionActive: false
     property int revealStep: 0
     property var currentTime: new Date()
     property alias powerText: powerController.powerText
@@ -37,9 +39,7 @@ ShellRoot {
     readonly property string secondsText: two(currentTime.getSeconds())
     readonly property string weekdayText: dayNames[weekdayIndex]
     readonly property string weekdayKanji: dayKanji[weekdayIndex] + "曜日"
-    readonly property string dateText: monthNames[currentTime.getMonth()] + " " + currentTime.getDate() + "  //  " + currentTime.getFullYear()
-    readonly property string railDateText: weekdayText.substring(0, 3) + " " + two(currentTime.getDate()) + " "
-        + monthNames[currentTime.getMonth()].substring(0, 3) + " " + currentTime.getFullYear()
+    readonly property string dateText: monthNames[currentTime.getMonth()] + " " + currentTime.getDate() + "  ·  " + currentTime.getFullYear()
     readonly property real dayProgress: (currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds()) / 86400
 
     readonly property string effectiveInputMonitorName: inputMonitorName !== ""
@@ -91,12 +91,12 @@ ShellRoot {
     }
 
     function lock() {
-        if (sessionLock.locked || closing) return
+        if (sessionActive || closing) return
         resetCycleState()
         loadThemeColors()
         refreshPowerStatus()
         settingsController.load()
-        sessionLock.locked = true
+        sessionActive = true
         introTimer.restart()
     }
 
@@ -123,14 +123,14 @@ ShellRoot {
 
     Timer {
         interval: 1000
-        running: sessionLock.locked
+        running: root.sessionActive
         repeat: true
         onTriggered: currentTime = new Date()
     }
 
     Timer {
         interval: 30000
-        running: sessionLock.locked
+        running: root.sessionActive
         repeat: true
         onTriggered: refreshPowerStatus()
     }
@@ -159,7 +159,7 @@ ShellRoot {
         id: unlockAnimationTimer
         interval: 640
         onTriggered: {
-            sessionLock.locked = false
+            root.sessionActive = false
             if (!sessionLock.secure) unlockExitTimer.start()
         }
     }
@@ -175,7 +175,7 @@ ShellRoot {
 
     WlSessionLock {
         id: sessionLock
-        locked: false
+        locked: root.sessionActive
 
         onSecureChanged: {
             if (root.closing && !secure) unlockExitTimer.restart()
@@ -193,13 +193,6 @@ ShellRoot {
             LockUi.LockBackground {
                 anchors.fill: parent
                 lockRoot: root
-            }
-
-            LockUi.LockChrome {
-                anchors.fill: parent
-                lockRoot: root
-                screenName: lockSurface.surfaceName
-                primary: lockSurface.isInputScreen
             }
 
             Loader {

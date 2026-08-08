@@ -1,16 +1,16 @@
 import QtQuick
 
-// Csendes pecsét: álló négyzetkeret, tuskör és a 守 jel.
+// Csendes pecset: allo negyzetkeret, tuskor es a 守 jel.
 Item {
     id: seal
 
-    required property var lockRoot
+    required property var greeter
     property real diameter: 96
     property bool busy: false
     property bool alert: false
     property string glyph: "守"
 
-    readonly property color markColor: alert ? lockRoot.alertColor : lockRoot.accent
+    readonly property color markColor: alert ? greeter.alertColor : greeter.accent
 
     width: diameter
     height: diameter

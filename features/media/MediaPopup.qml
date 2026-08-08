@@ -13,7 +13,9 @@ PanelWindow {
     property bool opened: false
     property int barHeight: 26
     property var activePlayer: null
-    property var selectedPlayer: null
+    // Stored as a bus name rather than an object so the choice survives the
+    // popup being unloaded on close, and re-resolves if the player restarts.
+    property string selectedPlayerDbusName: ""
     property var calendarNow: new Date()
     property var calendarView: new Date()
     property var monthNames: []
@@ -35,6 +37,14 @@ PanelWindow {
     readonly property alias cpuUsage: statsController.cpuUsage
     readonly property alias ramUsage: statsController.ramUsage
     readonly property alias diskUsage: statsController.diskUsage
+    readonly property var selectedPlayer: {
+        if (selectedPlayerDbusName === "") return null
+        var players = Mpris.players.values
+        for (var i = 0; i < players.length; i++) {
+            if (players[i].dbusName === selectedPlayerDbusName) return players[i]
+        }
+        return null
+    }
     readonly property var effectivePlayer: selectedPlayer || activePlayer
     readonly property real trackedPosition: positionController.valid ? positionController.position : -1
 
@@ -295,7 +305,7 @@ PanelWindow {
                         compact: true
                         artworkEnabled: mediaPopup.currentTab === 0
                         livePosition: mediaPopup.trackedPosition
-                        onPlayerSelected: (player) => mediaPopup.selectedPlayer = player
+                        onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
                         onSeeked: (seconds) => positionController.adopt(seconds)
                     }
 
@@ -337,7 +347,7 @@ PanelWindow {
                     cavaValues: mediaPopup.cavaValues
                     artworkEnabled: mediaPopup.currentTab === 1
                     livePosition: mediaPopup.trackedPosition
-                    onPlayerSelected: (player) => mediaPopup.selectedPlayer = player
+                    onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
                     onSeeked: (seconds) => positionController.adopt(seconds)
                 }
 

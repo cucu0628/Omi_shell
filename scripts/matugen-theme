@@ -2,14 +2,19 @@
 set -euo pipefail
 
 base="$HOME/.config/quickshell/omi_shell"
+bgdir="$HOME/Pictures/wallpapers"
 wallpaper=${1:-}
-fallback="$base/wallpapers/omi-mountain-tower.png"
 out_dir="$base/themes/dynamic-matugen"
 out="$out_dir/theme.conf"
 
 [[ -n $wallpaper && -r $wallpaper ]] || wallpaper=""
 [[ -n $wallpaper ]] || { [[ -r "$base/current-wallpaper" ]] && wallpaper=$(<"$base/current-wallpaper"); }
-[[ -r $wallpaper ]] || wallpaper="$fallback"
+# Fall back to the first wallpaper on disk; if there is none, leave it empty and
+# the built-in palette below is used instead.
+[[ -r $wallpaper ]] || wallpaper=$(find "$bgdir" -maxdepth 1 -type f \
+  \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \) \
+  2>/dev/null | sort | head -n 1)
+[[ -r $wallpaper ]] || wallpaper=""
 
 background="#15130c"
 foreground="#e8e2d4"

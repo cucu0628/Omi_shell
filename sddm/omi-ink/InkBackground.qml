@@ -1,24 +1,24 @@
 import QtQuick
-import "." as LockUi
+import "." as Ink
 
 Item {
     id: backgroundView
 
-    required property var lockRoot
+    required property var greeter
 
-    readonly property bool alive: lockRoot.ready && !lockRoot.closing
+    readonly property bool alive: greeter.ready && !greeter.closing
     readonly property real ensoSize: Math.min(width, height) * 0.62
 
     Rectangle {
         id: paper
 
         anchors.fill: parent
-        color: backgroundView.lockRoot.background
+        color: backgroundView.greeter.background
 
         Behavior on color { ColorAnimation { duration: 180 } }
     }
 
-    // Ensō: nyitott tuskör, alig láthatóan, lassan lélegezve.
+    // Enso: nyitott tuskor, alig lathatoan, lassan lelegezve.
     Item {
         width: backgroundView.ensoSize
         height: backgroundView.ensoSize
@@ -36,7 +36,7 @@ Item {
                 anchors.fill: parent
                 radius: width / 2
                 color: "transparent"
-                border.color: backgroundView.lockRoot.foreground
+                border.color: backgroundView.greeter.foreground
                 border.width: 2
                 opacity: 0.07
 
@@ -48,7 +48,7 @@ Item {
                 }
             }
 
-            // Az ecsetvonás nyitott vége.
+            // Az ecsetvonas nyitott vege.
             Rectangle {
                 width: parent.width * 0.3
                 height: parent.height * 0.17
@@ -62,13 +62,13 @@ Item {
         }
     }
 
-    LockUi.LockGlow {
+    Ink.InkGlow {
         width: Math.min(backgroundView.width * 0.9, 1100)
         height: width * 0.7
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: backgroundView.width * 0.08
         y: -height * 0.42
-        glowColor: backgroundView.lockRoot.foreground
+        glowColor: backgroundView.greeter.foreground
         intensity: backgroundView.alive ? 0.05 : 0
 
         Behavior on intensity { NumberAnimation { duration: 1400; easing.type: Easing.OutCubic } }

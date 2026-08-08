@@ -159,6 +159,7 @@ Item {
             + "; sh \"$base/scripts/hyprland-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/zen-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/btop-theme\" >/dev/null 2>&1 || true"
+            + "; sh \"$base/scripts/sddm-theme\" >/dev/null 2>&1 || true"
         applyProcess.command = ["sh", "-c", command]
         applyProcess.running = true
     }

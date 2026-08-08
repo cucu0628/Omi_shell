@@ -131,9 +131,8 @@ omi_shell/
 │       ├── PowerStatusController.qml
 │       ├── AuthenticationController.qml
 │       ├── LockScreenSettingsController.qml
-│       ├── LockBackground.qml        # Komorebi háttér: fénysávok, rács, vignetta
+│       ├── LockBackground.qml        # Csendes háttér: ensō kör, vignetta
 │       ├── LockGlow.qml              # Rétegzett puha fényfolt
-│       ├── LockChrome.qml            # Képernyőnkénti felső/alsó sáv és keret
 │       ├── LockShutter.qml           # Shoji nyitó/záró animáció minden monitoron
 │       ├── LockSeal.qml              # Forgó 守 pecsét
 │       ├── LockClock.qml             # Óra, dátum, napi haladásjelző
@@ -253,7 +252,7 @@ Az alsóbb réteg nem importálhat magasabb réteget. A `core/` nem importál `f
 - About rendszerinformáció controller.
 - A felesleges gyökér popup wrapperek megszűntek; a `shell.qml` közvetlenül importálja a feature-típusokat.
 - Lock theme, power, PAM controller, háttér, card és password field szétválasztása.
-- Lockscreen újratervezés a shell tus/komorebi nyelvén: chrome sávok, pecsét, óra és shoji nyitó/záró animáció.
+- Lockscreen újratervezés csendes tus stílusban: ensō háttér, pecsét, óra és shoji nyitó/záró animáció.
 
 ### Következő
 

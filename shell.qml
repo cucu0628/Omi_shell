@@ -368,11 +368,13 @@ ShellRoot {
     App.LazyPopup {
         id: mediaPopup
         property int currentTab: 0
+        property string selectedPlayerDbusName: ""
         popupComponent: Component {
             MediaFeature.MediaPopup {
                 theme: shellRoot.shellTheme
                 screen: mediaPopup.screen
                 currentTab: mediaPopup.currentTab
+                selectedPlayerDbusName: mediaPopup.selectedPlayerDbusName
                 barHeight: shellRoot.barHeight
                 activePlayer: shellRoot.activePlayer
                 cavaValues: cavaController.values
@@ -380,6 +382,7 @@ ShellRoot {
                 monthNames: shellRoot.monthNames
                 dayNames: shellRoot.dayNames
                 onCurrentTabChanged: mediaPopup.currentTab = currentTab
+                onSelectedPlayerDbusNameChanged: mediaPopup.selectedPlayerDbusName = selectedPlayerDbusName
             }
         }
     }

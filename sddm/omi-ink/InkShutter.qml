@@ -1,17 +1,17 @@
 import QtQuick
 
-// Shoji-redőny: papírtáblák csúsznak szét, illetve össze.
-// A találkozó élt lágy árnyék kíséri, nem világító pászma.
+// Shoji-redony: papirtablak csusznak szet inditaskor, es ossze sikeres
+// bejelentkezeskor. A talalkozo elt lagy arnyek kiseri.
 Item {
     id: shutter
 
-    required property var lockRoot
+    required property var greeter
 
     property real shutterFactor: 0
     property real dimOpacity: 0
     property real alertOpacity: 0
 
-    readonly property color panelColor: lockRoot.background
+    readonly property color panelColor: greeter.background
     readonly property real edgeShadow: 1 - Math.min(1, shutterFactor * 3)
 
     Rectangle {
@@ -60,12 +60,12 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: shutter.lockRoot.alertColor
+        color: shutter.greeter.alertColor
         opacity: shutter.alertOpacity
     }
 
     SequentialAnimation {
-        running: shutter.lockRoot.ready && !shutter.lockRoot.closing
+        running: shutter.greeter.ready && !shutter.greeter.closing
 
         ParallelAnimation {
             NumberAnimation { target: shutter; property: "shutterFactor"; to: 1; duration: 680; easing.type: Easing.OutCubic }
@@ -74,7 +74,7 @@ Item {
     }
 
     SequentialAnimation {
-        running: shutter.lockRoot.closing
+        running: shutter.greeter.closing
 
         PauseAnimation { duration: 110 }
 
@@ -84,10 +84,10 @@ Item {
     }
 
     Connections {
-        target: shutter.lockRoot
+        target: shutter.greeter
 
         function onFailedChanged() {
-            if (shutter.lockRoot.failed) alertAnimation.restart()
+            if (shutter.greeter.failed) alertAnimation.restart()
         }
     }
 
