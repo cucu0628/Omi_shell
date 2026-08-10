@@ -21,6 +21,10 @@ PanelWindow {
     property string vpnName: ""
     property string networkType: "offline"
     property bool networkPopupOpen: false
+    property bool bluetoothAvailable: false
+    property bool bluetoothEnabled: false
+    property bool bluetoothConnected: false
+    property bool bluetoothPopupOpen: false
     property bool notificationsDnd: false
     property bool notificationsHasToast: false
     property int notificationsUnreadCount: 0
@@ -32,6 +36,7 @@ PanelWindow {
     signal centerToggleRequested()
     signal audioToggleRequested()
     signal networkToggleRequested()
+    signal bluetoothToggleRequested()
     signal notificationsToggleRequested()
     signal powerToggleRequested()
     signal launchCommand(var command)
@@ -92,6 +97,15 @@ PanelWindow {
                 connectionType: root.networkType
                 popupOpen: root.networkPopupOpen
                 onClicked: root.networkToggleRequested()
+            }
+
+            BluetoothStatusItem {
+                theme: root.theme
+                available: root.bluetoothAvailable
+                enabled: root.bluetoothEnabled
+                connected: root.bluetoothConnected
+                popupOpen: root.bluetoothPopupOpen
+                onClicked: root.bluetoothToggleRequested()
             }
 
             VpnStatusItem {

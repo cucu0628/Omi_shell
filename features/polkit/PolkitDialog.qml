@@ -12,12 +12,16 @@ PanelWindow {
 
     readonly property var flow: agent.flow
     readonly property bool opened: agent.isActive && flow !== null
-    readonly property string panelBg: theme ? theme.background : "#15110f"
-    readonly property string panelFg: theme ? theme.foreground : "#f1e7d0"
-    readonly property string panelAccent: theme ? theme.accent : "#d7472f"
-    readonly property string mutedFg: theme && theme.muted ? theme.muted : "#9f8f7c"
-    readonly property string inkBg: theme && theme.surface ? theme.surface : "#1b1613"
+    readonly property bool failed: flow !== null && flow.failed
+    readonly property string panelBg: theme ? theme.background : "#11130f"
+    readonly property string panelFg: theme ? theme.foreground : "#e8ddc7"
+    readonly property string panelAccent: theme ? theme.accent : "#b7372f"
+    readonly property string mutedFg: theme && theme.muted ? theme.muted : "#958b7a"
+    readonly property string inkBg: theme && theme.surface ? theme.surface : "#191b16"
     readonly property string errorColor: "#d7472f"
+    readonly property color hoverBg: Qt.rgba(1, 1, 1, 0.075)
+    readonly property color lineBg: Qt.rgba(1, 1, 1, 0.055)
+    readonly property color frameColor: failed ? errorColor : panelAccent
 
     function focusInput() {
         if (opened && flow && flow.isResponseRequired) responseInput.forceActiveFocus()
@@ -79,6 +83,12 @@ PanelWindow {
         onTriggered: window.focusInput()
     }
 
+    Rectangle {
+        anchors.fill: parent
+        color: window.panelBg
+        opacity: 0.72
+    }
+
     MouseArea {
         anchors.fill: parent
         enabled: window.opened
@@ -97,85 +107,104 @@ PanelWindow {
         Rectangle {
             id: card
             width: parent.width
-            implicitHeight: body.implicitHeight + 48
+            implicitHeight: header.height + 12 + 1 + 12 + body.implicitHeight + 32
             color: window.panelBg
-            border.color: window.flow && window.flow.failed ? window.errorColor : window.panelAccent
-            border.width: 2
+            border.color: window.frameColor
+            border.width: 1
+            radius: 0
             clip: true
-
-            Rectangle {
-                width: 220
-                height: 220
-                radius: 110
-                x: parent.width - 105
-                y: -125
-                color: window.panelAccent
-                opacity: 0.09
-            }
+            Behavior on border.color { ColorAnimation { duration: 140; easing.type: Easing.OutCubic } }
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: mouse => mouse.accepted = true
             }
 
+            Item {
+                id: header
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                anchors.topMargin: 16
+                height: 44
+
+                Rectangle {
+                    id: headerSeal
+                    width: 44
+                    height: 44
+                    color: window.frameColor
+                    Behavior on color { ColorAnimation { duration: 140; easing.type: Easing.OutCubic } }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "権"
+                        color: window.panelBg
+                        font.pixelSize: 22
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                Column {
+                    anchors.left: headerSeal.right
+                    anchors.leftMargin: 12
+                    anchors.right: headerState.left
+                    anchors.rightMargin: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 3
+
+                    Text {
+                        text: "AUTHENTICATION"
+                        color: window.panelFg
+                        font.pixelSize: 12
+                        font.letterSpacing: 3
+                        font.bold: true
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: "権限  /  polkit agent"
+                        color: window.mutedFg
+                        font.pixelSize: 9
+                        elide: Text.ElideRight
+                    }
+                }
+
+                Text {
+                    id: headerState
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: window.failed ? "DENIED" : "REQUIRED"
+                    color: window.frameColor
+                    font.pixelSize: 9
+                    font.letterSpacing: 2
+                    font.bold: true
+                }
+            }
+
+            Rectangle {
+                id: headerRule
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: header.bottom
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                anchors.topMargin: 12
+                height: 1
+                color: window.mutedFg
+                opacity: 0.35
+            }
+
             Column {
                 id: body
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 24
-                spacing: 16
-
-                Row {
-                    width: parent.width
-                    spacing: 14
-
-                    Rectangle {
-                        width: 48
-                        height: 48
-                        color: window.inkBg
-                        border.color: window.panelAccent
-                        border.width: 1
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰌾"
-                            color: window.panelAccent
-                            font.family: "Symbols Nerd Font Mono"
-                            font.pixelSize: 23
-                        }
-                    }
-
-                    Column {
-                        width: parent.width - 62
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: 3
-
-                        Text {
-                            text: "KENGEN"
-                            color: window.panelAccent
-                            font.pixelSize: 10
-                            font.letterSpacing: 5
-                            font.bold: true
-                        }
-
-                        Text {
-                            width: parent.width
-                            text: "Authentication required"
-                            color: window.panelFg
-                            font.pixelSize: 23
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
-                        }
-                    }
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: window.panelAccent
-                    opacity: 0.42
-                }
+                anchors.top: headerRule.bottom
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                anchors.topMargin: 12
+                spacing: 14
 
                 Text {
                     width: parent.width
@@ -188,21 +217,22 @@ PanelWindow {
                 Text {
                     width: parent.width
                     visible: window.flow && window.flow.actionId !== ""
-                    text: window.flow ? "// " + window.flow.actionId : ""
+                    text: window.flow ? window.flow.actionId : ""
                     color: window.mutedFg
-                    font.pixelSize: 10
+                    font.pixelSize: 9
+                    font.letterSpacing: 1
                     elide: Text.ElideMiddle
                 }
 
                 Column {
                     width: parent.width
                     visible: window.flow && window.flow.identities.length > 1
-                    spacing: 7
+                    spacing: 6
 
                     Text {
                         text: "AUTHENTICATE AS"
-                        color: window.mutedFg
-                        font.pixelSize: 10
+                        color: window.panelAccent
+                        font.pixelSize: 9
                         font.letterSpacing: 2
                         font.bold: true
                     }
@@ -211,28 +241,49 @@ PanelWindow {
                         model: window.flow ? window.flow.identities : []
 
                         Rectangle {
+                            id: identityRow
                             required property var modelData
+                            readonly property bool current: window.flow && window.flow.selectedIdentity === modelData
 
                             width: body.width
-                            height: 38
-                            color: window.flow && window.flow.selectedIdentity === modelData ? Qt.rgba(window.panelAccent.r, window.panelAccent.g, window.panelAccent.b, 0.16) : window.inkBg
-                            border.color: window.flow && window.flow.selectedIdentity === modelData ? window.panelAccent : Qt.rgba(1, 1, 1, 0.08)
+                            height: 36
+                            radius: 0
+                            color: identityRow.current
+                                ? window.inkBg
+                                : (identityMouse.containsMouse ? window.hoverBg : window.panelBg)
+                            border.color: identityRow.current ? window.panelAccent : Qt.rgba(1, 1, 1, 0.06)
                             border.width: 1
+                            Behavior on color { ColorAnimation { duration: 110; easing.type: Easing.OutCubic } }
+
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                width: 2
+                                color: window.panelAccent
+                                opacity: identityRow.current ? 1 : 0.35
+                            }
 
                             Text {
                                 anchors.left: parent.left
-                                anchors.leftMargin: 12
+                                anchors.leftMargin: 13
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.displayName + "  //  " + modelData.string
-                                color: window.panelFg
-                                font.pixelSize: 12
+                                text: identityRow.modelData.displayName + "  ·  " + identityRow.modelData.string
+                                color: identityRow.current ? window.panelAccent : window.panelFg
+                                font.pixelSize: 11
+                                elide: Text.ElideRight
                             }
 
                             MouseArea {
+                                id: identityMouse
                                 anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     window.response = ""
-                                    window.flow.selectedIdentity = modelData
+                                    window.flow.selectedIdentity = identityRow.modelData
                                     focusTimer.restart()
                                 }
                             }
@@ -242,29 +293,35 @@ PanelWindow {
 
                 Rectangle {
                     width: parent.width
-                    height: 52
+                    height: 46
                     visible: window.flow && window.flow.isResponseRequired
+                    radius: 0
                     color: window.inkBg
-                    border.color: window.flow && window.flow.failed ? window.errorColor : window.panelAccent
-                    border.width: window.flow && window.flow.failed ? 2 : 1
+                    border.color: window.failed
+                        ? window.errorColor
+                        : (responseInput.activeFocus ? window.panelAccent : window.lineBg)
+                    border.width: 1
+                    Behavior on border.color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
                     Rectangle {
-                        width: 3
-                        height: parent.height
-                        color: window.flow && window.flow.failed ? window.errorColor : window.panelAccent
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: 2
+                        color: window.frameColor
                     }
 
                     TextInput {
                         id: responseInput
                         anchors.left: parent.left
-                        anchors.leftMargin: 18
+                        anchors.leftMargin: 16
                         anchors.right: parent.right
-                        anchors.rightMargin: 18
+                        anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
                         height: parent.height - 10
                         verticalAlignment: TextInput.AlignVCenter
                         color: window.panelFg
-                        font.pixelSize: 15
+                        font.pixelSize: 14
                         echoMode: window.flow && window.flow.responseVisible ? TextInput.Normal : TextInput.Password
                         inputMethodHints: window.flow && window.flow.responseVisible ? Qt.ImhNone : Qt.ImhSensitiveData
                         text: window.response
@@ -276,6 +333,7 @@ PanelWindow {
                             visible: parent.text === ""
                             text: window.flow && window.flow.inputPrompt !== "" ? window.flow.inputPrompt : "Password"
                             color: window.mutedFg
+                            font.pixelSize: 14
                             verticalAlignment: Text.AlignVCenter
                         }
                     }
@@ -284,35 +342,85 @@ PanelWindow {
                 Text {
                     width: parent.width
                     visible: window.flow && window.flow.supplementaryMessage !== ""
-                    text: window.flow ? "// " + window.flow.supplementaryMessage : ""
+                    text: window.flow ? window.flow.supplementaryMessage : ""
                     color: window.flow && window.flow.supplementaryIsError ? window.errorColor : window.mutedFg
-                    font.pixelSize: 12
+                    font.pixelSize: 11
                     wrapMode: Text.Wrap
                 }
 
-                Row {
-                    anchors.right: parent.right
-                    spacing: 10
+                Item {
+                    width: parent.width
+                    height: 40
 
-                    Rectangle {
-                        width: 104
-                        height: 38
-                        color: cancelMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
-                        border.color: window.mutedFg
-                        border.width: 1
-
-                        Text { anchors.centerIn: parent; text: "Cancel"; color: window.panelFg; font.pixelSize: 12 }
-                        MouseArea { id: cancelMouse; anchors.fill: parent; hoverEnabled: true; onClicked: window.cancel() }
+                    Text {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "ESC  cancel      ↵  submit"
+                        color: window.mutedFg
+                        opacity: 0.72
+                        font.pixelSize: 9
+                        font.letterSpacing: 1
                     }
 
-                    Rectangle {
-                        width: 126
-                        height: 38
-                        opacity: window.response !== "" ? 1 : 0.45
-                        color: submitMouse.containsMouse && window.response !== "" ? Qt.lighter(window.panelAccent, 1.12) : window.panelAccent
+                    Row {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 8
 
-                        Text { anchors.centerIn: parent; text: "Authenticate"; color: window.panelBg; font.pixelSize: 12; font.bold: true }
-                        MouseArea { id: submitMouse; anchors.fill: parent; enabled: window.response !== ""; hoverEnabled: true; onClicked: window.submit() }
+                        Rectangle {
+                            width: 104
+                            height: 40
+                            radius: 0
+                            color: cancelMouse.containsMouse ? window.hoverBg : "transparent"
+                            border.color: window.lineBg
+                            border.width: 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "CANCEL"
+                                color: window.panelFg
+                                font.pixelSize: 9
+                                font.letterSpacing: 2
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                id: cancelMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: window.cancel()
+                            }
+                        }
+
+                        Rectangle {
+                            width: 134
+                            height: 40
+                            radius: 0
+                            opacity: window.response !== "" ? 1 : 0.45
+                            color: submitMouse.containsMouse && window.response !== ""
+                                ? Qt.lighter(window.panelAccent, 1.15)
+                                : window.panelAccent
+                            Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "AUTHENTICATE"
+                                color: window.panelBg
+                                font.pixelSize: 9
+                                font.letterSpacing: 2
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                id: submitMouse
+                                anchors.fill: parent
+                                enabled: window.response !== ""
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: window.submit()
+                            }
+                        }
                     }
                 }
             }

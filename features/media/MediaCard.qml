@@ -114,6 +114,7 @@ Item {
             Image {
                 id: compactArt
                 anchors.fill: parent
+                anchors.margins: 1
                 source: card.artworkEnabled && card.compact && card.player && card.player.trackArtUrl !== "" ? card.player.trackArtUrl : ""
                 sourceSize: Qt.size(256, 256)
                 fillMode: Image.PreserveAspectCrop
@@ -122,7 +123,7 @@ Item {
                 visible: status === Image.Ready
             }
 
-            Rectangle { anchors.fill: parent; color: card.background; opacity: 0.18; visible: compactArt.visible }
+            Rectangle { anchors.fill: parent; anchors.margins: 1; color: card.background; opacity: 0.18; visible: compactArt.visible }
             Text { anchors.centerIn: parent; text: "音"; color: card.accent; font.pixelSize: 34; opacity: 0.72; visible: !compactArt.visible }
         }
 
@@ -261,6 +262,7 @@ Item {
                 Image {
                     id: fullArt
                     anchors.fill: parent
+                    anchors.margins: 1
                     source: card.artworkEnabled && !card.compact && card.player && card.player.trackArtUrl !== "" ? card.player.trackArtUrl : ""
                     sourceSize: Qt.size(512, 512)
                     fillMode: Image.PreserveAspectCrop
@@ -269,7 +271,7 @@ Item {
                     visible: status === Image.Ready
                 }
 
-                Rectangle { anchors.fill: parent; color: card.background; opacity: 0.16; visible: fullArt.visible }
+                Rectangle { anchors.fill: parent; anchors.margins: 1; color: card.background; opacity: 0.16; visible: fullArt.visible }
                 Text { anchors.centerIn: parent; text: "音"; color: card.accent; font.pixelSize: 46; opacity: 0.6; visible: !fullArt.visible }
                 Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 3; color: card.accent; opacity: 0.9 }
             }

@@ -8,7 +8,7 @@ current=""
 
 emit_theme() {
   local slug=$1 conf=$2 kind=${3:-static}
-  local name=$slug bg="#1e1e2e" fg="#cdd6f4" accent="#89b4fa" surface="#181825" muted="#9399b2"
+  local name=$slug bg="#1e1e2e" fg="#cdd6f4" accent="#89b4fa" surface="#181825" muted="#9399b2" icon_theme="Yaru-dark"
   [[ -r $conf ]] || return 0
 
   while IFS= read -r line; do
@@ -24,6 +24,7 @@ emit_theme() {
       ACCENT|BORDER_FOREGROUND) accent=$value ;;
       SURFACE) surface=$value ;;
       MUTED) muted=$value ;;
+      ICON_THEME) icon_theme=$value ;;
     esac
     case "$line" in
       'env = BACKGROUND,'*) bg=${line#*,}; [[ $bg == '##'* ]] && bg="#${bg#??}" ;;
@@ -34,7 +35,7 @@ emit_theme() {
 
   local marker=""
   [[ $slug == "$current" ]] && marker="current"
-  printf '%s|%s|%s|%s|%s|%s|%s|%s|%s\n' "$name" "$slug" "$marker" "$bg" "$fg" "$accent" "$surface" "$muted" "$kind"
+  printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s\n' "$name" "$slug" "$marker" "$bg" "$fg" "$accent" "$surface" "$muted" "$kind" "$icon_theme"
 }
 
 emit_theme "dynamic-matugen" "$themes/dynamic-matugen/theme.conf" "dynamic"

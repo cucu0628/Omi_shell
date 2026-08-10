@@ -10,6 +10,7 @@ QtObject {
     required property var mediaPopup
     required property var audioPopup
     required property var networkPopup
+    required property var bluetoothPopup
     required property var aboutPopup
     required property var notifications
 
@@ -21,6 +22,7 @@ QtObject {
         calendarPopup.opened = false
         audioPopup.opened = false
         networkPopup.opened = false
+        bluetoothPopup.opened = false
         notifications.menuOpened = false
         if (nextScreen) mediaPopup.screen = nextScreen
         mediaPopup.opened = !openHere
@@ -33,6 +35,7 @@ QtObject {
     function setNotificationsOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -49,6 +52,7 @@ QtObject {
     function setMenuOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
@@ -65,6 +69,7 @@ QtObject {
     function setLauncherOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
@@ -81,6 +86,7 @@ QtObject {
     function setClipboardOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             themeSwitcher.opened = false
@@ -97,6 +103,7 @@ QtObject {
     function setThemeSwitcherOpen(open, nextMode, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -114,6 +121,7 @@ QtObject {
     function setPowerMenuOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -130,6 +138,7 @@ QtObject {
     function setCalendarOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -147,6 +156,7 @@ QtObject {
     function setAudioOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -164,6 +174,7 @@ QtObject {
     function setAboutOpen(open, nextScreen) {
         if (open) {
             networkPopup.opened = false
+            bluetoothPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -189,6 +200,7 @@ QtObject {
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
+            bluetoothPopup.opened = false
             notifications.menuOpened = false
             if (nextScreen) networkPopup.screen = nextScreen
         }
@@ -229,6 +241,28 @@ QtObject {
 
     function toggleNetwork(nextScreen) {
         setNetworkOpen(!(networkPopup.opened && nextScreen && networkPopup.screen === nextScreen), nextScreen)
+    }
+
+    function setBluetoothOpen(open, nextScreen) {
+        if (open) {
+            menu.opened = false
+            launcher.opened = false
+            clipboard.opened = false
+            themeSwitcher.opened = false
+            powerMenu.opened = false
+            calendarPopup.opened = false
+            mediaPopup.opened = false
+            audioPopup.opened = false
+            aboutPopup.opened = false
+            networkPopup.opened = false
+            notifications.menuOpened = false
+            if (nextScreen) bluetoothPopup.screen = nextScreen
+        }
+        bluetoothPopup.opened = open
+    }
+
+    function toggleBluetooth(nextScreen) {
+        setBluetoothOpen(!(bluetoothPopup.opened && nextScreen && bluetoothPopup.screen === nextScreen), nextScreen)
     }
 
     function toggleAbout(nextScreen) {

@@ -9,9 +9,6 @@ PanelWindow {
 
     property var theme: null
     property bool opened: false
-    property alias hardwareItems: systemInfo.hardwareItems
-    property alias systemItems: systemInfo.systemItems
-    property alias osName: systemInfo.osName
     property alias themeName: systemInfo.themeName
     property int shellUptime: 0
 
@@ -36,9 +33,9 @@ PanelWindow {
         { icon: "󰉋", label: "Config", value: systemInfo.configPath }
     ].filter(function (item) { return item.value !== ""; })
 
-    readonly property int maxRows: Math.max(1, shellItems.length, hardwareItems.length, systemItems.length)
+    readonly property int shellRows: Math.max(1, shellItems.length)
     // DashPanel chrome (header, rule, margins) is 60px; rows are 32 with 6 between.
-    readonly property int panelHeight: 60 + maxRows * 32 + (maxRows - 1) * 6
+    readonly property int panelHeight: 60 + shellRows * 32 + (shellRows - 1) * 6
     readonly property int frameHeight: 16 + 44 + 12 + 1 + 12 + panelHeight + 16
 
     function formatUptime(seconds) {
@@ -88,7 +85,7 @@ PanelWindow {
         id: content
         anchors.centerIn: parent
         enabled: opened
-        width: Math.min(880, parent.width - 44)
+        width: Math.min(860, parent.width - 44)
         height: Math.min(aboutWindow.frameHeight, parent.height - 64)
         opacity: opened ? 1 : 0
         scale: opened ? 1 : 0.98
@@ -115,29 +112,15 @@ PanelWindow {
                 anchors.topMargin: 16
                 height: 44
 
-                Rectangle {
-                    id: headerSeal
-                    width: 44
-                    height: 44
-                    color: panelAccent
-
-                    SharedUi.ShellLogo {
-                        anchors.centerIn: parent
-                        size: 26
-                        color: panelBg
-                    }
-                }
-
                 Column {
-                    anchors.left: headerSeal.right
-                    anchors.leftMargin: 12
+                    anchors.left: parent.left
                     anchors.right: headerMeta.left
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 3
 
                     Text {
-                        text: "OMI SHELL"
+                        text: "ABOUT OMI SHELL"
                         color: panelFg
                         font.pixelSize: 12
                         font.letterSpacing: 3
@@ -146,7 +129,7 @@ PanelWindow {
 
                     Text {
                         width: parent.width
-                        text: "知らせ  /  " + (systemInfo.userHost !== "" ? systemInfo.userHost : aboutWindow.osName)
+                        text: "Identity, runtime and configuration"
                         color: mutedFg
                         font.pixelSize: 9
                         elide: Text.ElideRight
@@ -201,36 +184,99 @@ PanelWindow {
                 anchors.rightMargin: 16
                 anchors.topMargin: 12
                 anchors.bottomMargin: 16
-                spacing: 12
+                spacing: 14
 
+                Rectangle {
+                    width: 286
+                    height: body.height
+                    color: inkBg
+                    border.color: panelAccent
+                    border.width: 1
 
-                readonly property real columnWidth: (width - spacing * 2) / 3
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: 3
+                        color: panelAccent
+                    }
+
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width - 36
+                        spacing: 9
+
+                        Item {
+                            width: 210
+                            height: 210
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            Image {
+                                id: fastfetchLogo
+                                anchors.fill: parent
+                                source: "file://" + Quickshell.env("HOME") + "/.config/fastfetch/omi.png"
+                                sourceSize: Qt.size(420, 420)
+                                fillMode: Image.PreserveAspectFit
+                                asynchronous: true
+                                mipmap: true
+                            }
+
+                            SharedUi.ShellLogo {
+                                anchors.centerIn: parent
+                                visible: fastfetchLogo.status === Image.Error
+                                size: 150
+                                color: panelAccent
+                            }
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: "OMI SHELL"
+                            color: panelFg
+                            font.pixelSize: 18
+                            font.bold: true
+                            font.letterSpacing: 4
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: systemInfo.userHost !== "" ? systemInfo.userHost : "Quickshell desktop shell"
+                            color: mutedFg
+                            font.pixelSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                        }
+
+                        Rectangle {
+                            width: 56
+                            height: 2
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: panelAccent
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: aboutWindow.themeName !== "" ? aboutWindow.themeName.toUpperCase() : "NO ACTIVE THEME"
+                            color: panelAccent
+                            font.pixelSize: 8
+                            font.bold: true
+                            font.letterSpacing: 2
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
 
                 AboutUi.InfoSectionCard {
-                    width: body.columnWidth
+                    width: body.width - 286 - body.spacing
                     height: body.height
                     theme: aboutWindow.theme
-                    title: "SHELL"
-                    kanji: "殻"
+                    title: "SHELL DETAILS"
+                    kanji: ""
+                    trailing: shellItems.length + " ITEMS"
                     entries: aboutWindow.shellItems
-                }
-
-                AboutUi.InfoSectionCard {
-                    width: body.columnWidth
-                    height: body.height
-                    theme: aboutWindow.theme
-                    title: "HARDWARE"
-                    kanji: "機器"
-                    entries: aboutWindow.hardwareItems
-                }
-
-                AboutUi.InfoSectionCard {
-                    width: body.columnWidth
-                    height: body.height
-                    theme: aboutWindow.theme
-                    title: "SYSTEM"
-                    kanji: "系統"
-                    entries: aboutWindow.systemItems
+                    border.color: Qt.rgba(1, 1, 1, 0.09)
                 }
             }
         }

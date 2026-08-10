@@ -49,6 +49,7 @@ omi_shell/
 │   │   ├── CenterClock.qml
 │   │   ├── TrayGroup.qml
 │   │   ├── WifiStatusItem.qml
+│   │   ├── BluetoothStatusItem.qml
 │   │   ├── VpnStatusItem.qml
 │   │   ├── AudioStatusItem.qml
 │   │   ├── NotificationStatusItem.qml
@@ -87,6 +88,9 @@ omi_shell/
 │   │   ├── SystemStatsCard.qml
 │   │   ├── SystemStatsController.qml
 │   │   └── PlaybackPositionController.qml
+│   │
+│   ├── bluetooth/
+│   │   └── BluetoothPopup.qml
 │   │
 │   ├── weather/
 │   │   ├── WeatherController.qml

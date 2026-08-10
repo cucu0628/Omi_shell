@@ -75,7 +75,8 @@ Item {
                 accent: parts[5] || "#89b4fa",
                 surface: parts[6] || "#181825",
                 muted: parts[7] || "#9399b2",
-                kind: parts[8] || "static"
+                kind: parts[8] || "static",
+                iconTheme: parts[9] || "Yaru-dark"
             })
             if ((parts[2] || "") === "current") currentIndex = parsed.length - 1
         }
@@ -140,7 +141,9 @@ Item {
         applying = true
         sceneApplied = false
 
-        if (theme) {
+        // Dynamic colours do not exist until Matugen has processed the selected
+        // wallpaper. Avoid briefly applying the palette from the previous image.
+        if (theme && selectedTheme.kind !== "dynamic") {
             theme.background = selectedTheme.background
             theme.foreground = selectedTheme.foreground
             theme.accent = selectedTheme.accent
@@ -156,10 +159,13 @@ Item {
             + "; [ \"$slug\" = dynamic-matugen ] && sh \"$base/scripts/matugen-theme\" \"$path\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/kitty-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/gtk-theme\" >/dev/null 2>&1 || true"
+            + "; sh \"$base/scripts/icon-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/hyprland-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/zen-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/btop-theme\" >/dev/null 2>&1 || true"
+            + "; sh \"$base/scripts/fastfetch-theme\" >/dev/null 2>&1 || true"
             + "; sh \"$base/scripts/sddm-theme\" >/dev/null 2>&1 || true"
+            + "; sh \"$base/scripts/theme-read\""
         applyProcess.command = ["sh", "-c", command]
         applyProcess.running = true
     }
@@ -210,6 +216,13 @@ Item {
     }
     Process {
         id: applyProcess
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var palette = (this.text || "").trim()
+                if (palette !== "" && controller.theme && controller.theme.updateColors)
+                    controller.theme.updateColors(palette)
+            }
+        }
         onExited: {
             controller.applying = false
             controller.sceneApplied = true

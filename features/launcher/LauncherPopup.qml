@@ -15,23 +15,24 @@ PanelWindow {
     property string calcResult: ""
     property bool suppressHoverSelection: false
     property var applications: []
+    property var projects: []
     readonly property string panelBg: theme ? theme.background : "#15110f"
     readonly property string panelFg: theme ? theme.foreground : "#f1e7d0"
     readonly property string panelAccent: theme ? theme.accent : "#d7472f"
     readonly property string mutedFg: theme && theme.muted ? theme.muted : "#9f8f7c"
     readonly property string inkBg: theme && theme.surface ? theme.surface : "#1b1613"
     readonly property bool calcMode: query.trim().startsWith("=")
-    readonly property bool commandMode: query.trim().startsWith(">")
+    readonly property bool projectMode: query.trim().startsWith(">")
     readonly property bool webMode: query.trim().startsWith("?")
     readonly property bool emojiMode: query.trim().startsWith(":")
     readonly property bool hasQuery: query.trim() !== ""
     readonly property string calcExpression: calcMode ? query.trim().slice(1).trim() : ""
-    readonly property string commandText: commandMode ? query.trim().slice(1).trim() : ""
+    readonly property string projectQuery: projectMode ? query.trim().slice(1).trim() : ""
     readonly property string webQuery: webMode ? query.trim().slice(1).trim() : ""
     readonly property string emojiQuery: emojiMode ? query.trim().slice(1).trim() : ""
-    readonly property string modeTitle: calcMode ? "CALCULATOR" : (commandMode ? "COMMAND" : (webMode ? "WEB SEARCH" : (emojiMode ? "EMOJI" : "APPLICATIONS")))
+    readonly property string modeTitle: calcMode ? "CALCULATOR" : (projectMode ? "PROJECTS" : (webMode ? "WEB SEARCH" : (emojiMode ? "EMOJI" : "APPLICATIONS")))
     readonly property var appResults: buildAppResults(query)
-    readonly property var visibleItems: calcMode ? calcItems() : (commandMode ? commandItems() : (webMode ? webItems() : (emojiMode ? emojiItems() : appResults)))
+    readonly property var visibleItems: calcMode ? calcItems() : (projectMode ? projectItems() : (webMode ? webItems() : (emojiMode ? emojiItems() : appResults)))
     readonly property var aliases: [{
         "name": "browser",
         "terms": ["web", "internet"],
@@ -263,6 +264,32 @@ PanelWindow {
         applications = DesktopEntries.applications.values.slice();
     }
 
+    function refreshProjects() {
+        if (projectsProcess.running)
+            return ;
+
+        projectsProcess.command = ["sh", "-c", "find \"$HOME/Projects\" -mindepth 1 -maxdepth 1 -type d ! -name '.*' -print 2>/dev/null | sort -f"];
+        projectsProcess.running = true;
+    }
+
+    function parseProjects(output) {
+        var lines = (output || "").trim().split("\n");
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+            var path = lines[i].trim();
+            if (path === "")
+                continue;
+
+            result.push({
+                "type": "project",
+                "title": path.slice(path.lastIndexOf("/") + 1),
+                "subtitle": path,
+                "path": path
+            });
+        }
+        projects = result;
+    }
+
     function resetLauncher() {
         suppressHoverSelection = false;
         query = "";
@@ -310,7 +337,7 @@ PanelWindow {
     }
 
     function buildAppResults(value) {
-        if (calcMode || commandMode || webMode || emojiMode)
+        if (calcMode || projectMode || webMode || emojiMode)
             return [];
 
         var queryWords = words(value);
@@ -408,19 +435,23 @@ PanelWindow {
         }];
     }
 
-    function commandItems() {
-        if (commandText === "")
-            return [{
-            "type": "hint",
-            "title": "Run a command",
-            "subtitle": "Example: >hyprctl reload"
-        }];
-
-        return [{
-            "type": "command",
-            "title": commandText,
-            "subtitle": "Run in shell"
-        }];
+    function projectItems() {
+        var queryWords = words(projectQuery);
+        var result = [];
+        for (var i = 0; i < projects.length; i++) {
+            var project = projects[i];
+            var haystack = normalize(project.title + " " + project.path);
+            var matches = true;
+            for (var j = 0; j < queryWords.length; j++) {
+                if (haystack.indexOf(queryWords[j]) === -1) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches)
+                result.push(project);
+        }
+        return result;
     }
 
     function webItems() {
@@ -525,8 +556,8 @@ PanelWindow {
         if (item.type === "hint")
             return "󰋼";
 
-        if (item.type === "command")
-            return "";
+        if (item.type === "project")
+            return "󰉋";
 
         if (item.type === "web")
             return "󰖟";
@@ -553,8 +584,8 @@ PanelWindow {
             copyProcess.command = ["sh", "-c", "printf %s " + shellQuote(calcResult) + " | wl-copy"];
             copyProcess.running = true;
             opened = false;
-        } else if (item.type === "command" && commandText !== "") {
-            runProcess.command = ["sh", "-c", commandText];
+        } else if (item.type === "project" && item.path) {
+            runProcess.command = ["code", item.path];
             runProcess.running = true;
             opened = false;
         } else if (item.type === "web" && webQuery !== "") {
@@ -581,7 +612,7 @@ PanelWindow {
             return calcMode;
 
         if (prefix === ">")
-            return commandMode;
+            return projectMode;
 
         if (prefix === "?")
             return webMode;
@@ -589,7 +620,7 @@ PanelWindow {
         if (prefix === ":")
             return emojiMode;
 
-        return !calcMode && !commandMode && !webMode && !emojiMode;
+        return !calcMode && !projectMode && !webMode && !emojiMode;
     }
 
     function selectMode(prefix) {
@@ -653,12 +684,16 @@ PanelWindow {
     onOpenedChanged: {
         if (opened) {
             refreshApplications();
+            refreshProjects();
             focusTimer.start();
         } else {
             resetLauncher();
         }
     }
-    Component.onCompleted: refreshApplications()
+    Component.onCompleted: {
+        refreshApplications();
+        refreshProjects();
+    }
     onQueryChanged: {
         suppressHoverSelection = false;
         selectedIndex = 0;
@@ -720,6 +755,14 @@ PanelWindow {
 
     Process {
         id: runProcess
+    }
+
+    Process {
+        id: projectsProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: launcherWindow.parseProjects(this.text || "")
+        }
     }
 
     LauncherUi.FrecencyStore {
@@ -817,8 +860,8 @@ PanelWindow {
                     width: parent.width
                     height: 48
                     opened: launcherWindow.opened
-                    indicator: calcMode ? "=" : (commandMode ? ">" : (webMode ? "?" : (emojiMode ? ":" : "⌕")))
-                    placeholder: "アプリを検索 / search applications..."
+                    indicator: calcMode ? "=" : (projectMode ? ">" : (webMode ? "?" : (emojiMode ? ":" : "⌕")))
+                    placeholder: projectMode ? "Search projects in ~/Projects..." : "Search applications..."
                     inputLeftMargin: 44
                     inputVerticalPadding: 12
                     surface: inkBg
@@ -853,7 +896,7 @@ PanelWindow {
                             "label": "WEB",
                             "prefix": "?"
                         }, {
-                            "label": "COMMAND",
+                            "label": "PROJECTS",
                             "prefix": ">"
                         }]
 
@@ -942,7 +985,7 @@ PanelWindow {
                     Text {
                         visible: visibleItems.length === 0
                         anchors.centerIn: parent
-                        text: "結果なし / NO RESULTS"
+                        text: projectMode ? "No projects found in ~/Projects" : "NO RESULTS"
                         color: mutedFg
                         font.pixelSize: 10
                     }

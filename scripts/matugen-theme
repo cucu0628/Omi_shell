@@ -23,7 +23,10 @@ surface="#222017"
 muted="#ccc6b5"
 
 if command -v matugen >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && [[ -r $wallpaper ]]; then
-  json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-tonal-spot --prefer saturation 2>/dev/null || true)
+  # The most saturated sample is often a tiny highlight and can tint an
+  # otherwise neutral wallpaper incorrectly. Use Matugen's dominant extracted
+  # source colour for a stable palette that reflects the whole image.
+  json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-tonal-spot --source-color-index 0 2>/dev/null || true)
   if [[ -n $json ]]; then
     background=$(jq -r '.colors.background.default.color // .colors.surface.default.color // empty' <<<"$json")
     foreground=$(jq -r '.colors.on_surface.default.color // .colors.on_background.default.color // empty' <<<"$json")
@@ -33,13 +36,19 @@ if command -v matugen >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && [[ -r 
   fi
 fi
 
-[[ $background == \#* ]] || background="#15130c"
-[[ $foreground == \#* ]] || foreground="#e8e2d4"
-[[ $accent == \#* ]] || accent="#d8c770"
-[[ $surface == \#* ]] || surface="#222017"
-[[ $muted == \#* ]] || muted="#ccc6b5"
+valid_color() {
+  [[ $1 =~ ^#[[:xdigit:]]{6}$ ]]
+}
+
+valid_color "$background" || background="#15130c"
+valid_color "$foreground" || foreground="#e8e2d4"
+valid_color "$accent" || accent="#d8c770"
+valid_color "$surface" || surface="#222017"
+valid_color "$muted" || muted="#ccc6b5"
 
 mkdir -p "$out_dir"
+tmp=$(mktemp "$out_dir/.theme.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
 {
   printf 'NAME=Dynamic / Matugen\n'
   printf 'BACKGROUND=%s\n' "$background"
@@ -47,6 +56,10 @@ mkdir -p "$out_dir"
   printf 'ACCENT=%s\n' "$accent"
   printf 'SURFACE=%s\n' "$surface"
   printf 'MUTED=%s\n' "$muted"
-} > "$out"
+  printf 'ICON_THEME=auto\n'
+} > "$tmp"
+
+mv "$tmp" "$out"
+trap - EXIT
 
 cat "$out"

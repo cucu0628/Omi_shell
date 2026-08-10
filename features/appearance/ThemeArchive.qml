@@ -226,7 +226,8 @@ Item {
 
                             Text {
                                 width: parent.width
-                                text: modelData.kind === "dynamic" ? "derived from selected wallpaper" : "static shell palette"
+                                text: (modelData.kind === "dynamic" ? "dominant wallpaper colour" : "static palette")
+                                    + "  ·  " + (modelData.iconTheme === "auto" ? "Yaru auto" : modelData.iconTheme)
                                 color: archive.mutedFg
                                 font.pixelSize: 8
                                 elide: Text.ElideRight

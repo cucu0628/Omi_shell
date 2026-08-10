@@ -154,7 +154,7 @@ PanelWindow {
 
         var device = network.device || (statusController ? statusController.device : "");
         if (device === "") {
-            errorMessage = "切断失敗 / A Wi-Fi eszköz nem található";
+            errorMessage = "Wi-Fi device not found";
             return ;
         }
         busySsid = network.ssid;
@@ -172,16 +172,16 @@ PanelWindow {
         var message = (output || "").trim();
         var lower = message.toLowerCase();
         if (lower.indexOf("secrets were required") !== -1 || lower.indexOf("not provided") !== -1)
-            return "暗号エラー / Jelszó szükséges vagy hibás";
+            return "A password is required or the password is incorrect";
 
         if (lower.indexOf("no network with ssid") !== -1)
-            return "電波なし / A hálózat már nem érhető el";
+            return "This network is no longer available";
 
         if (lower.indexOf("activation failed") !== -1)
-            return "接続失敗 / A kapcsolódás sikertelen";
+            return "Could not connect to this network";
 
         var lines = message.split("\n");
-        return lines.length > 0 && lines[lines.length - 1] !== "" ? lines[lines.length - 1] : "接続失敗 / Connection failed";
+        return lines.length > 0 && lines[lines.length - 1] !== "" ? lines[lines.length - 1] : "Connection failed";
     }
 
     function toggleWifi() {
@@ -289,7 +289,9 @@ PanelWindow {
 
                         Text {
                             width: parent.width
-                            text: statusController && statusController.connected ? "接続済み  /  " + (statusController.connectionType === "ethernet" ? "wired" : statusController.connectionName) : "無接続  /  offline"
+                            text: statusController && statusController.connected
+                                ? "Connected  ·  " + (statusController.connectionType === "ethernet" ? "Ethernet" : statusController.connectionName)
+                                : "Offline"
                             color: mutedFg
                             font.pixelSize: 9
                             elide: Text.ElideRight
@@ -356,16 +358,23 @@ PanelWindow {
                             spacing: 4
 
                             Text {
-                                text: statusController && statusController.connected ? (statusController.connectionType === "ethernet" ? "Ethernet / " : "Wi-Fi / ") + statusController.device : "接続なし / No connection"
+                                width: parent.width
+                                text: statusController && statusController.connected
+                                    ? (statusController.connectionType === "ethernet" ? "Ethernet" : statusController.connectionName)
+                                    : "No connection"
                                 color: panelFg
                                 font.pixelSize: 13
+                                elide: Text.ElideRight
                             }
 
                             Text {
-                                text: "内網住所 / LAN IP    " + (statusController && statusController.lanIp !== "" ? statusController.lanIp : "---.---.---.---")
+                                width: parent.width
+                                text: (statusController && statusController.device !== "" ? statusController.device + "  ·  " : "")
+                                    + "LAN IP  " + (statusController && statusController.lanIp !== "" ? statusController.lanIp : "---.---.---.---")
                                 color: mutedFg
                                 font.pixelSize: 12
                                 font.letterSpacing: 0.5
+                                elide: Text.ElideRight
                             }
 
                         }
@@ -380,7 +389,8 @@ PanelWindow {
 
                     Text {
                         width: parent.width - 190
-                        text: scanning ? "探索中 / SCANNING..." : "AVAILABLE WI-FI  /  " + networks.length
+                        height: parent.height
+                        text: scanning ? "SCANNING..." : "AVAILABLE WI-FI  ·  " + networks.length
                         color: panelAccent
                         font.family: "monospace"
                         font.pixelSize: 8
@@ -392,7 +402,7 @@ PanelWindow {
                     Text {
                         width: 110
                         height: parent.height
-                        text: "詳細 / 802.1X"
+                        text: "Settings"
                         color: advancedMouse.containsMouse ? panelAccent : mutedFg
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
@@ -413,7 +423,7 @@ PanelWindow {
                     Text {
                         width: 80
                         height: parent.height
-                        text: "更新 / Refresh"
+                        text: "Refresh"
                         color: refreshMouse.containsMouse ? panelAccent : mutedFg
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
@@ -440,7 +450,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         visible: !wifiEnabled || (!scanning && networks.length === 0)
-                        text: wifiEnabled ? "電波なし / No networks found" : "無線停止 / Wi-Fi is off"
+                        text: wifiEnabled ? "No networks found. Try refreshing." : "Turn on Wi-Fi to see networks"
                         color: mutedFg
                         font.pixelSize: 13
                     }
@@ -493,7 +503,7 @@ PanelWindow {
                                         }
 
                                         Column {
-                                            width: parent.width - 129
+                                            width: parent.width - 158
                                             anchors.verticalCenter: parent.verticalCenter
                                             spacing: 2
 
@@ -507,7 +517,7 @@ PanelWindow {
                                             }
 
                                             Text {
-                                                text: modelData.active ? "接続済み / Connected" : modelData.signal + "% / " + (modelData.secure ? modelData.security : "公開 / Open")
+                                                text: modelData.active ? "Connected" : modelData.signal + "%  ·  " + (modelData.secure ? modelData.security : "Open network")
                                                 color: modelData.active ? panelAccent : mutedFg
                                                 font.family: "monospace"
                                                 font.pixelSize: 9
@@ -516,9 +526,9 @@ PanelWindow {
                                         }
 
                                         Text {
-                                            width: 51
+                                            width: 80
                                             height: parent.height
-                                            text: modelData.active ? (busySsid === modelData.ssid ? "切断中" : "切断") : (modelData.enterprise ? "802.1X" : (modelData.secure ? "" : ""))
+                                            text: modelData.active ? (busySsid === modelData.ssid ? "Wait..." : "Disconnect") : (modelData.enterprise ? "802.1X" : (modelData.secure ? "" : "Connect"))
                                             color: modelData.active ? panelAccent : mutedFg
                                             font.family: modelData.active || modelData.enterprise ? "sans-serif" : "Symbols Nerd Font Mono"
                                             font.pixelSize: modelData.enterprise ? 9 : 11
@@ -577,7 +587,8 @@ PanelWindow {
                                 width: parent.width - 92
                                 height: parent.height
                                 color: panelBg
-                                border.color: passwordInput.activeFocus ? panelAccent : mutedFg
+                                border.color: !selectedSecure ? hoverBg : (passwordInput.activeFocus ? panelAccent : mutedFg)
+                                opacity: selectedSecure ? 1 : 0.7
 
                                 TextInput {
                                     id: passwordInput
@@ -586,6 +597,7 @@ PanelWindow {
                                     anchors.leftMargin: 10
                                     anchors.rightMargin: 10
                                     color: panelFg
+                                    enabled: selectedSecure
                                     verticalAlignment: TextInput.AlignVCenter
                                     echoMode: TextInput.Password
                                     font.pixelSize: 12
@@ -594,7 +606,7 @@ PanelWindow {
                                     Text {
                                         anchors.fill: parent
                                         visible: passwordInput.text === ""
-                                        text: selectedSecure ? "暗号 / Password" : "暗号不要 / No password"
+                                        text: selectedSecure ? "Wi-Fi password" : "No password required"
                                         color: mutedFg
                                         verticalAlignment: Text.AlignVCenter
                                         font.pixelSize: 11
@@ -611,7 +623,7 @@ PanelWindow {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: connecting ? "接続中..." : "接続する"
+                                    text: connecting ? "Connecting..." : "Connect"
                                     color: panelBg
                                     font.pixelSize: 11
                                     font.bold: true
@@ -630,7 +642,7 @@ PanelWindow {
 
                         Text {
                             width: parent.width
-                            text: errorMessage !== "" ? errorMessage : selectedSsid
+                            text: errorMessage !== "" ? errorMessage : "Connect to " + selectedSsid + "  ·  Select again to cancel"
                             color: errorMessage !== "" ? panelAccent : mutedFg
                             font.pixelSize: 10
                             elide: Text.ElideRight

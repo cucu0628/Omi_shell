@@ -290,83 +290,127 @@ PanelWindow {
                 anchors.rightMargin: 16
                 anchors.topMargin: 12
                 anchors.bottomMargin: 16
+                clip: true
 
-                Column {
-                    anchors.fill: parent
-                    spacing: 12
-                    visible: mediaPopup.currentTab === 0
+                // Shoji: the pages sit side by side on one track and slide in the
+                // direction of the tab order. No fading -- panels move, they do
+                // not dissolve.
+                Item {
+                    id: pageTrack
+                    // Animate the index, not x: a width change then repositions the
+                    // track instantly instead of sliding it.
+                    property real slidePosition: mediaPopup.currentTab
+                    readonly property bool sliding: pageSlide.running
+                    // Gap between pages so two panels read as separate sheets
+                    // passing each other rather than one smeared surface.
+                    readonly property real stride: pages.width + 16
 
-                    MediaUi.MediaCard {
-                        width: parent.width
-                        height: 168
-                        theme: mediaPopup.theme
-                        player: mediaPopup.effectivePlayer
-                        players: Mpris.players.values
-                        compact: true
-                        artworkEnabled: mediaPopup.currentTab === 0
-                        livePosition: mediaPopup.trackedPosition
-                        onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
-                        onSeeked: (seconds) => positionController.adopt(seconds)
+                    width: pages.width
+                    height: pages.height
+                    x: -slidePosition * stride
+
+                    Behavior on slidePosition {
+                        NumberAnimation { id: pageSlide; duration: 260; easing.type: Easing.InOutCubic }
                     }
 
-                    Row {
-                        width: parent.width
-                        height: parent.height - 180
-                        spacing: 12
+                    Item {
+                        x: 0
+                        width: pages.width
+                        height: pages.height
+                        visible: pageTrack.sliding || mediaPopup.currentTab === 0
+                        enabled: mediaPopup.currentTab === 0
 
-                        MediaUi.CalendarCard {
-                            width: parent.width - 244
-                            height: parent.height
-                            theme: mediaPopup.theme
-                            now: mediaPopup.calendarView
-                            today: mediaPopup.calendarNow
-                            monthNames: mediaPopup.monthNames
-                            dayNames: mediaPopup.dayNames
-                            dense: true
-                            onMonthChangeRequested: (delta) => mediaPopup.changeCalendarMonth(delta)
-                        }
+                        Column {
+                            anchors.fill: parent
+                            spacing: 12
 
-                        MediaUi.SystemStatsCard {
-                            width: 232
-                            height: parent.height
-                            theme: mediaPopup.theme
-                            cpuUsage: statsController.cpuUsage
-                            ramUsage: statsController.ramUsage
-                            diskUsage: statsController.diskUsage
+                            MediaUi.MediaCard {
+                                width: parent.width
+                                height: 168
+                                theme: mediaPopup.theme
+                                player: mediaPopup.effectivePlayer
+                                players: Mpris.players.values
+                                compact: true
+                                artworkEnabled: mediaPopup.currentTab === 0
+                                livePosition: mediaPopup.trackedPosition
+                                onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
+                                onSeeked: (seconds) => positionController.adopt(seconds)
+                            }
+
+                            Row {
+                                width: parent.width
+                                height: parent.height - 180
+                                spacing: 12
+
+                                MediaUi.CalendarCard {
+                                    width: parent.width - 244
+                                    height: parent.height
+                                    theme: mediaPopup.theme
+                                    now: mediaPopup.calendarView
+                                    today: mediaPopup.calendarNow
+                                    monthNames: mediaPopup.monthNames
+                                    dayNames: mediaPopup.dayNames
+                                    dense: true
+                                    onMonthChangeRequested: (delta) => mediaPopup.changeCalendarMonth(delta)
+                                }
+
+                                MediaUi.SystemStatsCard {
+                                    width: 232
+                                    height: parent.height
+                                    theme: mediaPopup.theme
+                                    cpuUsage: statsController.cpuUsage
+                                    ramUsage: statsController.ramUsage
+                                    diskUsage: statsController.diskUsage
+                                }
+                            }
                         }
                     }
-                }
 
-                MediaUi.MediaCard {
-                    anchors.fill: parent
-                    visible: mediaPopup.currentTab === 1
-                    theme: mediaPopup.theme
-                    player: mediaPopup.effectivePlayer
-                    players: Mpris.players.values
-                    compact: false
-                    cavaValues: mediaPopup.cavaValues
-                    artworkEnabled: mediaPopup.currentTab === 1
-                    livePosition: mediaPopup.trackedPosition
-                    onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
-                    onSeeked: (seconds) => positionController.adopt(seconds)
-                }
+                    Item {
+                        x: pageTrack.stride
+                        width: pages.width
+                        height: pages.height
+                        visible: pageTrack.sliding || mediaPopup.currentTab === 1
+                        enabled: mediaPopup.currentTab === 1
 
-                WeatherUi.WeatherCard {
-                    anchors.fill: parent
-                    visible: mediaPopup.currentTab === 2
-                    theme: mediaPopup.theme
-                    now: mediaPopup.calendarNow
-                    location: weatherController.location
-                    temp: weatherController.temp
-                    feels: weatherController.feels
-                    description: weatherController.description
-                    humidity: weatherController.humidity
-                    wind: weatherController.wind
-                    pressure: weatherController.pressure
-                    precip: weatherController.precip
-                    sunrise: weatherController.sunrise
-                    sunset: weatherController.sunset
-                    forecast: weatherController.forecast
+                        MediaUi.MediaCard {
+                            anchors.fill: parent
+                            theme: mediaPopup.theme
+                            player: mediaPopup.effectivePlayer
+                            players: Mpris.players.values
+                            compact: false
+                            cavaValues: mediaPopup.cavaValues
+                            artworkEnabled: mediaPopup.currentTab === 1
+                            livePosition: mediaPopup.trackedPosition
+                            onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
+                            onSeeked: (seconds) => positionController.adopt(seconds)
+                        }
+                    }
+
+                    Item {
+                        x: pageTrack.stride * 2
+                        width: pages.width
+                        height: pages.height
+                        visible: pageTrack.sliding || mediaPopup.currentTab === 2
+                        enabled: mediaPopup.currentTab === 2
+
+                        WeatherUi.WeatherCard {
+                            anchors.fill: parent
+                            theme: mediaPopup.theme
+                            now: mediaPopup.calendarNow
+                            location: weatherController.location
+                            temp: weatherController.temp
+                            feels: weatherController.feels
+                            description: weatherController.description
+                            humidity: weatherController.humidity
+                            wind: weatherController.wind
+                            pressure: weatherController.pressure
+                            precip: weatherController.precip
+                            sunrise: weatherController.sunrise
+                            sunset: weatherController.sunset
+                            forecast: weatherController.forecast
+                        }
+                    }
                 }
             }
         }

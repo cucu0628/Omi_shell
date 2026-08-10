@@ -81,6 +81,15 @@ git clone https://git.asked.hu/asked/qs.git \
   "$HOME/.config/quickshell/omi_shell"
 ```
 
+Install every package used by the shell and its bundled integrations on Arch
+Linux or CachyOS. The script skips packages that are already installed and uses
+`paru` or `yay` for the two AUR dependencies:
+
+```bash
+cd "$HOME/.config/quickshell/omi_shell"
+./install.sh
+```
+
 Make sure the helper scripts are executable:
 
 ```bash
@@ -113,9 +122,9 @@ Restart an already running instance with:
 ~/.config/quickshell/omi_shell/scripts/theme-refresh
 ```
 
-There is currently no installer or package manifest. Dependencies, session
-startup, PAM, and integration with external applications must be configured by
-the user.
+The package installer does not enable system services or configure session
+startup, PAM, SDDM, and external applications; those remain explicit system
+configuration steps.
 
 ## Usage
 
@@ -276,6 +285,7 @@ Theme scripts generate:
 - `~/.config/hypr/colors.lua` for the custom Hyprland Lua configuration.
 - `zen-theme.css` for Zen Browser chrome.
 - A `btop` theme in the user's btop configuration.
+- A Fastfetch configuration and matching Omi logo in the user's Fastfetch configuration.
 
 These files are generated, not automatically imported by every application.
 Add the relevant include or import to each application's configuration.

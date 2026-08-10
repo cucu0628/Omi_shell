@@ -15,6 +15,7 @@ import "features/launcher" as LauncherFeature
 import "features/lock" as LockFeature
 import "features/media" as MediaFeature
 import "features/menu" as MenuFeature
+import "features/bluetooth" as BluetoothFeature
 import "features/network" as NetworkFeature
 import "features/notifications" as NotificationFeature
 import "features/osd" as OsdFeature
@@ -71,6 +72,10 @@ ShellRoot {
 
     Core.NetworkStatusController {
         id: networkStatusController
+    }
+
+    Core.BluetoothStatusController {
+        id: bluetoothStatusController
     }
 
     Core.MprisController {
@@ -245,6 +250,17 @@ ShellRoot {
     }
 
     App.LazyPopup {
+        id: bluetoothPopup
+        popupComponent: Component {
+            BluetoothFeature.BluetoothPopup {
+                theme: shellRoot.shellTheme
+                statusController: bluetoothStatusController
+                screen: bluetoothPopup.screen
+            }
+        }
+    }
+
+    App.LazyPopup {
         id: aboutPopup
         popupComponent: Component {
             AboutFeature.AboutPopup {
@@ -289,6 +305,7 @@ ShellRoot {
         mediaPopup: mediaPopup
         audioPopup: audioPopup
         networkPopup: networkPopup
+        bluetoothPopup: bluetoothPopup
         aboutPopup: aboutPopup
         notifications: notifications
         onCalendarRefreshRequested: shellRoot.calendarNow = new Date()
@@ -346,6 +363,10 @@ ShellRoot {
             vpnName: shellRoot.vpnName
             networkType: shellRoot.networkType
             networkPopupOpen: networkPopup.opened && networkPopup.screen === targetScreen
+            bluetoothAvailable: bluetoothStatusController.available
+            bluetoothEnabled: bluetoothStatusController.enabled
+            bluetoothConnected: bluetoothStatusController.connected
+            bluetoothPopupOpen: bluetoothPopup.opened && bluetoothPopup.screen === targetScreen
             notificationsDnd: notifications.dnd
             notificationsHasToast: notifications.hasToast
             notificationsUnreadCount: notifications.unreadCount
@@ -357,6 +378,7 @@ ShellRoot {
             onCenterToggleRequested: popupCoordinator.toggleCenterPopup(targetScreen)
             onAudioToggleRequested: popupCoordinator.toggleAudio(targetScreen)
             onNetworkToggleRequested: popupCoordinator.toggleNetwork(targetScreen)
+            onBluetoothToggleRequested: popupCoordinator.toggleBluetooth(targetScreen)
             onNotificationsToggleRequested: popupCoordinator.toggleNotifications(targetScreen)
             onPowerToggleRequested: popupCoordinator.togglePowerMenu(targetScreen)
             onLaunchCommand: command => launchBarCommand(command)
