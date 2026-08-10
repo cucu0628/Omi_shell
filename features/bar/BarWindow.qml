@@ -19,6 +19,7 @@ PanelWindow {
     property int audioVolumePercent: 0
     property bool vpnActive: false
     property string vpnName: ""
+    property bool vpnPopupOpen: false
     property string networkType: "offline"
     property bool networkPopupOpen: false
     property bool bluetoothAvailable: false
@@ -37,6 +38,7 @@ PanelWindow {
     signal audioToggleRequested()
     signal networkToggleRequested()
     signal bluetoothToggleRequested()
+    signal vpnToggleRequested()
     signal notificationsToggleRequested()
     signal powerToggleRequested()
     signal launchCommand(var command)
@@ -113,7 +115,8 @@ PanelWindow {
                 barHeight: root.barHeight
                 active: root.vpnActive
                 vpnName: root.vpnName
-                onClicked: root.launchCommand(["sh", "-c", "command -v protonvpn-app >/dev/null 2>&1 && protonvpn-app || nm-connection-editor"])
+                popupOpen: root.vpnPopupOpen
+                onClicked: root.vpnToggleRequested()
             }
 
             AudioStatusItem {

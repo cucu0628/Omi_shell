@@ -11,6 +11,7 @@ Item {
 
     property bool active: false
     property string dbusName: ""
+    property string trackKey: ""
     property bool playing: false
 
     readonly property bool valid: baseStamp > 0
@@ -19,6 +20,8 @@ Item {
     property real baseSeconds: 0
     property real baseStamp: 0
     property int failures: 0
+    property int generation: 0
+    property int probeGeneration: -1
 
     readonly property bool probeAllowed: active && dbusName !== "" && failures < 3
 
@@ -27,13 +30,22 @@ Item {
     visible: false
 
     onDbusNameChanged: reset()
+    onTrackKeyChanged: beginTrackChange()
     onActiveChanged: if (active) requestProbe()
 
     function reset() {
         baseSeconds = 0
-        baseStamp = 0
+        baseStamp = dbusName !== "" ? Date.now() : 0
         failures = 0
         position = 0
+        generation++
+        requestProbe()
+    }
+
+    function beginTrackChange() {
+        failures = 0
+        generation++
+        adopt(0)
         requestProbe()
     }
 
@@ -48,10 +60,15 @@ Item {
 
     function requestProbe() {
         if (!probeAllowed || probe.running) return
+        probeGeneration = generation
         probe.running = true
     }
 
     function applyProbe(text) {
+        if (probeGeneration !== generation) {
+            retryProbe.restart()
+            return
+        }
         var match = /int64\s+(-?\d+)/.exec(text || "")
         if (!match) {
             controller.failures += 1
@@ -61,12 +78,22 @@ Item {
         controller.adopt(parseInt(match[1], 10) / 1000000)
     }
 
+    Timer {
+        id: retryProbe
+        interval: 0
+        onTriggered: controller.requestProbe()
+    }
+
     Process {
         id: probe
         command: ["gdbus", "call", "--session", "--dest", controller.dbusName,
             "--object-path", "/org/mpris/MediaPlayer2",
             "--method", "org.freedesktop.DBus.Properties.Get",
             "org.mpris.MediaPlayer2.Player", "Position"]
+        onExited: {
+            if (probeGeneration !== controller.generation)
+                retryProbe.restart()
+        }
         stdout: StdioCollector { onStreamFinished: controller.applyProbe(this.text || "") }
     }
 

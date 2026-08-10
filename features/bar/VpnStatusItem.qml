@@ -6,6 +6,7 @@ Item {
     required property int barHeight
     property bool active: false
     property string vpnName: ""
+    property bool popupOpen: false
     signal clicked()
 
     width: mouse.containsMouse && active ? Math.min(115, 26 + label.implicitWidth) : 22
@@ -20,7 +21,7 @@ Item {
         anchors.bottom: parent.bottom
         height: 2
         color: root.theme.accent
-        opacity: mouse.containsMouse || root.active ? 1 : 0
+        opacity: mouse.containsMouse || root.active || root.popupOpen ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
     }
     Row {
@@ -33,7 +34,7 @@ Item {
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: -2
                 text: root.active ? "󰦝" : "󰦜"
-                color: mouse.containsMouse || root.active ? root.theme.accent : root.theme.foreground
+                color: mouse.containsMouse || root.active || root.popupOpen ? root.theme.accent : root.theme.foreground
                 font.family: "Symbols Nerd Font Mono"
                 font.pixelSize: 24
                 Behavior on color { ColorAnimation { duration: 120 } }

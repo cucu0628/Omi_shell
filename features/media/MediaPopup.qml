@@ -95,6 +95,11 @@ PanelWindow {
         id: positionController
         active: mediaPopup.opened && mediaPopup.currentTab !== 2
         dbusName: mediaPopup.effectivePlayer ? (mediaPopup.effectivePlayer.dbusName || "") : ""
+        trackKey: mediaPopup.effectivePlayer
+            ? (mediaPopup.effectivePlayer.trackTitle || "") + "\u001f"
+                + (mediaPopup.effectivePlayer.trackArtist || "") + "\u001f"
+                + (mediaPopup.effectivePlayer.length || 0)
+            : ""
         playing: mediaPopup.effectivePlayer && mediaPopup.effectivePlayer.playbackState === MprisPlaybackState.Playing
     }
 
@@ -335,6 +340,7 @@ PanelWindow {
                                 livePosition: mediaPopup.trackedPosition
                                 onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
                                 onSeeked: (seconds) => positionController.adopt(seconds)
+                                onTrackChangeRequested: positionController.beginTrackChange()
                             }
 
                             Row {
@@ -384,6 +390,7 @@ PanelWindow {
                             livePosition: mediaPopup.trackedPosition
                             onPlayerSelected: (player) => mediaPopup.selectedPlayerDbusName = player ? (player.dbusName || "") : ""
                             onSeeked: (seconds) => positionController.adopt(seconds)
+                            onTrackChangeRequested: positionController.beginTrackChange()
                         }
                     }
 

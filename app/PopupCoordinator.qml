@@ -11,6 +11,8 @@ QtObject {
     required property var audioPopup
     required property var networkPopup
     required property var bluetoothPopup
+    required property var vpnPopup
+    required property var vpnCli
     required property var aboutPopup
     required property var notifications
 
@@ -23,6 +25,7 @@ QtObject {
         audioPopup.opened = false
         networkPopup.opened = false
         bluetoothPopup.opened = false
+        vpnPopup.opened = false
         notifications.menuOpened = false
         if (nextScreen) mediaPopup.screen = nextScreen
         mediaPopup.opened = !openHere
@@ -36,6 +39,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -53,6 +57,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
@@ -70,6 +75,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
@@ -87,6 +93,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             themeSwitcher.opened = false
@@ -104,6 +111,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -122,6 +130,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -139,6 +148,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -157,6 +167,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -175,6 +186,7 @@ QtObject {
         if (open) {
             networkPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
@@ -201,6 +213,7 @@ QtObject {
             audioPopup.opened = false
             aboutPopup.opened = false
             bluetoothPopup.opened = false
+            vpnPopup.opened = false
             notifications.menuOpened = false
             if (nextScreen) networkPopup.screen = nextScreen
         }
@@ -255,6 +268,7 @@ QtObject {
             audioPopup.opened = false
             aboutPopup.opened = false
             networkPopup.opened = false
+            vpnPopup.opened = false
             notifications.menuOpened = false
             if (nextScreen) bluetoothPopup.screen = nextScreen
         }
@@ -263,6 +277,46 @@ QtObject {
 
     function toggleBluetooth(nextScreen) {
         setBluetoothOpen(!(bluetoothPopup.opened && nextScreen && bluetoothPopup.screen === nextScreen), nextScreen)
+    }
+
+    function setVpnOpen(open, nextScreen) {
+        if (open) {
+            menu.opened = false
+            launcher.opened = false
+            clipboard.opened = false
+            themeSwitcher.opened = false
+            powerMenu.opened = false
+            calendarPopup.opened = false
+            mediaPopup.opened = false
+            audioPopup.opened = false
+            aboutPopup.opened = false
+            networkPopup.opened = false
+            bluetoothPopup.opened = false
+            notifications.menuOpened = false
+            if (nextScreen) vpnPopup.screen = nextScreen
+        }
+        vpnPopup.opened = open
+    }
+
+    function toggleVpn(nextScreen) {
+        setVpnOpen(!(vpnPopup.opened && nextScreen && vpnPopup.screen === nextScreen), nextScreen)
+    }
+
+    // The panel is opened alongside the action so a keybinding still gives
+    // visible feedback while the CLI works.
+    function vpnQuickConnect(nextScreen) {
+        setVpnOpen(true, nextScreen)
+        vpnCli.connectFastest()
+    }
+
+    function vpnDisconnect(nextScreen) {
+        setVpnOpen(true, nextScreen)
+        vpnCli.disconnectVpn()
+    }
+
+    function vpnOpenApp() {
+        setVpnOpen(false)
+        vpnCli.openApp()
     }
 
     function toggleAbout(nextScreen) {

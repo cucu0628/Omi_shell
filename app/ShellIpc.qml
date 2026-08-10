@@ -127,6 +127,17 @@ Item {
     }
 
     IpcHandler {
+        target: "vpn"
+
+        function toggle(): void { coordinator.toggleVpn(focusedScreenProvider()) }
+        function open(): void { coordinator.setVpnOpen(true, focusedScreenProvider()) }
+        function close(): void { coordinator.setVpnOpen(false) }
+        function connect(): void { coordinator.vpnQuickConnect(focusedScreenProvider()) }
+        function disconnect(): void { coordinator.vpnDisconnect(focusedScreenProvider()) }
+        function app(): void { coordinator.vpnOpenApp() }
+    }
+
+    IpcHandler {
         target: "about"
 
         function toggle(): void { root.scheduleAboutAction("toggle") }

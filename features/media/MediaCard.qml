@@ -15,6 +15,7 @@ Item {
     readonly property int spectrumBars: 36
     signal playerSelected(var player)
     signal seeked(real seconds)
+    signal trackChangeRequested()
 
     readonly property string background: theme ? theme.background : "#11130f"
     readonly property string surface: theme && theme.surface ? theme.surface : "#191b16"
@@ -89,6 +90,13 @@ Item {
 
     function setVolume(value, ratio) {
         if (volumeSupported(value)) value.volume = Math.max(0, Math.min(1, ratio))
+    }
+
+    function changeTrack(value, forward) {
+        if (!value || (forward ? !value.canGoNext : !value.canGoPrevious)) return
+        trackChangeRequested()
+        if (forward) value.next()
+        else value.previous()
     }
 
     SharedUi.DashPanel {
@@ -208,7 +216,7 @@ Item {
                     border.color: card.lineBg
                     border.width: 1
                     Text { anchors.centerIn: parent; text: "󰒮"; color: card.foreground; opacity: card.player && card.player.canGoPrevious ? 1 : 0.35; font.pixelSize: 15 }
-                    MouseArea { id: compactPrevHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: if (card.player && card.player.canGoPrevious) card.player.previous() }
+                    MouseArea { id: compactPrevHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: card.changeTrack(card.player, false) }
                 }
 
                 Rectangle {
@@ -226,7 +234,7 @@ Item {
                     border.color: card.lineBg
                     border.width: 1
                     Text { anchors.centerIn: parent; text: "󰒭"; color: card.foreground; opacity: card.player && card.player.canGoNext ? 1 : 0.35; font.pixelSize: 15 }
-                    MouseArea { id: compactNextHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: if (card.player && card.player.canGoNext) card.player.next() }
+                    MouseArea { id: compactNextHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: card.changeTrack(card.player, true) }
                 }
             }
         }
@@ -504,7 +512,7 @@ Item {
                     border.color: card.lineBg
                     border.width: 1
                     Text { anchors.centerIn: parent; text: "󰒮"; color: card.foreground; opacity: card.player && card.player.canGoPrevious ? 1 : 0.35; font.pixelSize: 20 }
-                    MouseArea { id: fullPrevHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: if (card.player && card.player.canGoPrevious) card.player.previous() }
+                    MouseArea { id: fullPrevHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: card.changeTrack(card.player, false) }
                 }
 
                 Rectangle {
@@ -522,7 +530,7 @@ Item {
                     border.color: card.lineBg
                     border.width: 1
                     Text { anchors.centerIn: parent; text: "󰒭"; color: card.foreground; opacity: card.player && card.player.canGoNext ? 1 : 0.35; font.pixelSize: 20 }
-                    MouseArea { id: fullNextHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: if (card.player && card.player.canGoNext) card.player.next() }
+                    MouseArea { id: fullNextHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: card.changeTrack(card.player, true) }
                 }
             }
 

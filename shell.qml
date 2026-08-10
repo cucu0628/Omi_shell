@@ -23,6 +23,7 @@ import "features/polkit" as PolkitFeature
 import "features/power" as PowerFeature
 import "features/screenshot" as ScreenshotFeature
 import "features/tray" as TrayFeature
+import "features/vpn" as VpnFeature
 
 ShellRoot {
     id: shellRoot
@@ -34,8 +35,8 @@ ShellRoot {
     property alias audioMuted: audioSummaryController.muted
     property alias visibleWorkspaceIds: workspaceController.visibleWorkspaceIds
     property alias occupiedWorkspaceIds: workspaceController.occupiedWorkspaceIds
-    property alias vpnActive: vpnStatusController.active
-    property alias vpnName: vpnStatusController.name
+    property alias vpnActive: vpnController.active
+    property alias vpnName: vpnController.name
     property alias networkType: networkStatusController.connectionType
     property alias currentWallpaper: wallpaperStore.currentWallpaper
     property alias activePlayer: mprisController.activePlayer
@@ -66,8 +67,8 @@ ShellRoot {
         onSinkChanged: audioSinkRefreshTimer.restart()
     }
 
-    Core.VpnStatusController {
-        id: vpnStatusController
+    Core.VpnController {
+        id: vpnController
     }
 
     Core.NetworkStatusController {
@@ -146,8 +147,7 @@ ShellRoot {
         return uniqueScreens.length > 0 ? uniqueScreens[0] : null
     }
 
-    function refreshVpnStatus() { vpnStatusController.refresh() }
-    function updateVpnStatus(output) { vpnStatusController.update(output) }
+    function refreshVpnStatus() { vpnController.refresh() }
 
     function toggleCenterPopup(nextScreen) { popupCoordinator.toggleCenterPopup(nextScreen) }
     function toggleNotificationsDnd() { popupCoordinator.toggleNotificationsDnd() }
@@ -261,6 +261,17 @@ ShellRoot {
     }
 
     App.LazyPopup {
+        id: vpnPopup
+        popupComponent: Component {
+            VpnFeature.VpnPopup {
+                theme: shellRoot.shellTheme
+                controller: vpnController
+                screen: vpnPopup.screen
+            }
+        }
+    }
+
+    App.LazyPopup {
         id: aboutPopup
         popupComponent: Component {
             AboutFeature.AboutPopup {
@@ -306,6 +317,8 @@ ShellRoot {
         audioPopup: audioPopup
         networkPopup: networkPopup
         bluetoothPopup: bluetoothPopup
+        vpnPopup: vpnPopup
+        vpnCli: vpnController
         aboutPopup: aboutPopup
         notifications: notifications
         onCalendarRefreshRequested: shellRoot.calendarNow = new Date()
@@ -361,6 +374,7 @@ ShellRoot {
             audioVolumePercent: shellRoot.audioVolumePercent
             vpnActive: shellRoot.vpnActive
             vpnName: shellRoot.vpnName
+            vpnPopupOpen: vpnPopup.opened && vpnPopup.screen === targetScreen
             networkType: shellRoot.networkType
             networkPopupOpen: networkPopup.opened && networkPopup.screen === targetScreen
             bluetoothAvailable: bluetoothStatusController.available
@@ -379,6 +393,7 @@ ShellRoot {
             onAudioToggleRequested: popupCoordinator.toggleAudio(targetScreen)
             onNetworkToggleRequested: popupCoordinator.toggleNetwork(targetScreen)
             onBluetoothToggleRequested: popupCoordinator.toggleBluetooth(targetScreen)
+            onVpnToggleRequested: popupCoordinator.toggleVpn(targetScreen)
             onNotificationsToggleRequested: popupCoordinator.toggleNotifications(targetScreen)
             onPowerToggleRequested: popupCoordinator.togglePowerMenu(targetScreen)
             onLaunchCommand: command => launchBarCommand(command)
