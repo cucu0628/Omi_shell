@@ -13,6 +13,11 @@ Item {
     readonly property string panelAccent: theme ? theme.accent : "#d7472f"
     readonly property string mutedFg: theme && theme.muted ? theme.muted : "#9f8f7c"
     readonly property string inkBg: theme && theme.surface ? theme.surface : "#1b1613"
+    readonly property int visibleNotificationCount: 6
+    readonly property int notificationRowHeight: 62
+    readonly property int notificationGap: 6
+    readonly property int notificationViewportHeight: visibleNotificationCount * notificationRowHeight
+        + (visibleNotificationCount - 1) * notificationGap
 
     signal closeRequested()
     signal dndToggleRequested()
@@ -62,7 +67,7 @@ Item {
                 contentHeight: menuPanelColumn.implicitHeight
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                interactive: contentHeight > height
+                interactive: false
 
                 Column {
                     id: menuPanelColumn
@@ -212,19 +217,34 @@ Item {
 
                     }
 
-                    Column {
-                        id: historyColumn
-
+                    Item {
                         width: parent.width
-                        spacing: 6
+                        height: Math.min(historyColumn.height, center.notificationViewportHeight)
                         visible: center.history.length > 0
 
-                        Repeater {
-                            model: center.history
+                        Flickable {
+                            id: historyFlick
 
-                            Rectangle {
-                                width: historyColumn.width
-                                height: 62
+                            anchors.fill: parent
+                            anchors.rightMargin: interactive ? 6 : 0
+                            contentWidth: width
+                            contentHeight: historyColumn.height
+                            clip: true
+                            boundsBehavior: Flickable.StopAtBounds
+                            interactive: contentHeight > height
+
+                            Column {
+                                id: historyColumn
+
+                                width: parent.width
+                                spacing: center.notificationGap
+
+                                Repeater {
+                                    model: center.history
+
+                                    Rectangle {
+                                        width: historyColumn.width
+                                        height: center.notificationRowHeight
                                 color: itemMouse.containsMouse ? center.inkBg : "transparent"
                                 border.color: modelData.critical ? center.panelAccent : "transparent"
                                 border.width: 1
@@ -366,9 +386,33 @@ Item {
 
                     }
 
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        width: 2
+                        color: center.mutedFg
+                        opacity: historyFlick.interactive ? 0.18 : 0
+                    }
+
+                    Rectangle {
+                        anchors.right: parent.right
+                        width: 2
+                        height: historyFlick.contentHeight > 0
+                            ? Math.max(24, parent.height * historyFlick.visibleArea.heightRatio)
+                            : 0
+                        y: historyFlick.visibleArea.yPosition * parent.height
+                        color: center.panelAccent
+                        opacity: historyFlick.interactive ? 0.9 : 0
+                    }
+
+                }
+
                 }
 
             }
+
+        }
 
         }
 

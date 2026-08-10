@@ -13,6 +13,7 @@ Item {
     property int unreadCount: 0
     property int nextEntryId: 1
     property int currentEntryId: -1
+    property int historyLimit: 100
     readonly property bool hasToast: toastVisible && currentNotification !== null
 
     width: 0
@@ -46,8 +47,8 @@ Item {
             defaultAction: defaultAction
         }
         var nextHistory = [entry]
-        for (var i = 0; i < history.length && i < 5; i++) nextHistory.push(history[i])
-        for (var dropped = 5; dropped < history.length; dropped++) {
+        for (var i = 0; i < history.length && i < historyLimit - 1; i++) nextHistory.push(history[i])
+        for (var dropped = historyLimit - 1; dropped < history.length; dropped++) {
             if (history[dropped].unread) unreadCount = Math.max(0, unreadCount - 1)
             if (history[dropped].notification) history[dropped].notification.expire()
         }
