@@ -9,7 +9,6 @@ import "features/about" as AboutFeature
 import "features/appearance" as AppearanceFeature
 import "features/audio" as AudioFeature
 import "features/bar" as BarUi
-import "features/calendar" as CalendarFeature
 import "features/clipboard" as ClipboardFeature
 import "features/launcher" as LauncherFeature
 import "features/lock" as LockFeature
@@ -77,6 +76,10 @@ ShellRoot {
 
     Core.BluetoothStatusController {
         id: bluetoothStatusController
+    }
+
+    Core.BatteryStatusController {
+        id: batteryStatusController
     }
 
     Core.MprisController {
@@ -157,7 +160,6 @@ ShellRoot {
     function setClipboardOpen(open, nextScreen) { popupCoordinator.setClipboardOpen(open, nextScreen) }
     function setThemeSwitcherOpen(open, nextMode, nextScreen) { popupCoordinator.setThemeSwitcherOpen(open, nextMode, nextScreen) }
     function setPowerMenuOpen(open, nextScreen) { popupCoordinator.setPowerMenuOpen(open, nextScreen) }
-    function setCalendarOpen(open, nextScreen) { popupCoordinator.setCalendarOpen(open, nextScreen) }
     function setAudioOpen(open, nextScreen) { popupCoordinator.setAudioOpen(open, nextScreen) }
     function setAboutOpen(open, nextScreen) { popupCoordinator.setAboutOpen(open, nextScreen) }
     function captureScreenshot(mode) {
@@ -215,16 +217,6 @@ ShellRoot {
         id: powerMenu
         popupComponent: Component {
             PowerFeature.PowerMenu { theme: shellRoot.shellTheme }
-        }
-    }
-
-    App.LazyPopup {
-        id: calendarPopup
-        popupComponent: Component {
-            CalendarFeature.CalendarPopup {
-                theme: shellRoot.shellTheme
-                screen: calendarPopup.screen
-            }
         }
     }
 
@@ -312,7 +304,6 @@ ShellRoot {
         clipboard: clipboardHistory
         themeSwitcher: themeSwitcher
         powerMenu: powerMenu
-        calendarPopup: calendarPopup
         mediaPopup: mediaPopup
         audioPopup: audioPopup
         networkPopup: networkPopup
@@ -369,7 +360,7 @@ ShellRoot {
             hasMediaSource: Mpris.players.values.length > 0
             cavaValues: cavaController.values
             menuOpen: omarchyMenu.opened && omarchyMenu.screen === targetScreen
-            centerPopupOpen: (mediaPopup.opened && mediaPopup.screen === targetScreen) || (calendarPopup.opened && calendarPopup.screen === targetScreen)
+            centerPopupOpen: mediaPopup.opened && mediaPopup.screen === targetScreen
             audioPopupOpen: audioPopup.opened && audioPopup.screen === targetScreen
             audioVolumePercent: shellRoot.audioVolumePercent
             vpnActive: shellRoot.vpnActive
@@ -381,6 +372,9 @@ ShellRoot {
             bluetoothEnabled: bluetoothStatusController.enabled
             bluetoothConnected: bluetoothStatusController.connected
             bluetoothPopupOpen: bluetoothPopup.opened && bluetoothPopup.screen === targetScreen
+            batteryAvailable: batteryStatusController.available
+            batteryPercentage: batteryStatusController.percentage
+            batteryCharging: batteryStatusController.charging
             notificationsDnd: notifications.dnd
             notificationsHasToast: notifications.hasToast
             notificationsUnreadCount: notifications.unreadCount

@@ -10,6 +10,7 @@ Item {
     readonly property color accent: host ? host.panelAccent : "#d7472f"
     readonly property color muted: host ? host.mutedFg : "#9f8f7c"
     readonly property color surface: host ? host.inkBg : "#1b1613"
+    readonly property bool readonlyResults: host !== null && host.visibleItems.length > 0 && host.visibleItems[0].readonly === true
 
     function connectView() {
         if (!host)
@@ -216,10 +217,24 @@ Item {
                 Flickable {
                     id: resultsFlick
 
+                    function ensureIndexVisible(index) {
+                        var item = resultsRepeater.itemAt(index)
+                        if (!item) return
+
+                        var top = item.y
+                        var bottom = top + item.height
+                        var maxY = Math.max(0, contentHeight - height)
+                        if (top < contentY)
+                            contentY = Math.max(0, Math.min(top, maxY))
+                        else if (bottom > contentY + height)
+                            contentY = Math.max(0, Math.min(bottom - height, maxY))
+                    }
+
                     anchors.fill: parent
                     contentHeight: resultsColumn.height
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
+                    interactive: contentHeight > height
                     visible: root.host && !root.host.isLoading && root.host.visibleItems.length > 0
 
                     Column {
@@ -229,6 +244,8 @@ Item {
                         spacing: 4
 
                         Repeater {
+                            id: resultsRepeater
+
                             model: root.host ? root.host.visibleItems : []
 
                             Rectangle {
@@ -267,18 +284,35 @@ Item {
                                         font.pixelSize: 14
                                     }
 
-                                    Text {
-                                        width: parent.width - 166
+                                    Column {
+                                        width: parent.width - (modelData.readonly ? 82 : 166)
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.name
-                                        color: root.fg
-                                        font.family: "monospace"
-                                        font.pixelSize: 12
-                                        font.weight: Font.DemiBold
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.name
+                                            color: root.fg
+                                            font.family: "monospace"
+                                            font.pixelSize: 12
+                                            font.weight: Font.DemiBold
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.readonly ? (modelData.path || "") : ""
+                                            visible: text !== ""
+                                            color: root.muted
+                                            font.family: "monospace"
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
                                     }
 
                                     Text {
-                                        width: 84
+                                        width: modelData.readonly ? 0 : 84
+                                        visible: !modelData.readonly
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignRight
                                         text: index === root.host.selectedIndex ? "ENTER  ↵" : (modelData.sub ? "OPEN  →" : "RUN  ↗")
@@ -294,9 +328,19 @@ Item {
 
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onEntered: root.host.selectedIndex = index
-                                    onClicked: root.host.openItem(modelData)
+                                    cursorShape: modelData.readonly ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                    onEntered: {
+                                        if (!root.host.suppressHoverSelection) root.host.selectedIndex = index
+                                    }
+                                    onPositionChanged: {
+                                        root.host.suppressHoverSelection = false
+                                        root.host.selectedIndex = index
+                                    }
+                                    onClicked: {
+                                        root.host.suppressHoverSelection = false
+                                        root.host.selectedIndex = index
+                                        root.host.openItem(modelData)
+                                    }
                                 }
 
                             }
@@ -322,7 +366,7 @@ Item {
                 }
 
                 Text {
-                    text: "ENTER  RUN"
+                    text: root.readonlyResults ? "TYPE  FILTER" : "ENTER  RUN"
                     color: root.muted
                     font.family: "monospace"
                     font.pixelSize: 8

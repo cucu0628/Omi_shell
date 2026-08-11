@@ -19,6 +19,7 @@ PanelWindow {
     property var activeResultsFlick: null
     property var activeCategoryFlick: null
     property int selectedIndex: 0
+    property bool suppressHoverSelection: false
     readonly property string panelBg: theme ? theme.background : "#15110f"
     readonly property string panelFg: theme ? theme.foreground : "#f1e7d0"
     readonly property string panelAccent: theme ? theme.accent : "#d7472f"
@@ -189,10 +190,11 @@ PanelWindow {
     }
 
     function resetMenu() {
+        menuController.cancelDynamic();
         navigationStack = [];
         activeCategory = "";
         activeSubmenu = [];
-        isLoading = false;
+        suppressHoverSelection = false;
         searchQuery = "";
         if (activeSearchInput)
             activeSearchInput.text = "";
@@ -230,7 +232,7 @@ PanelWindow {
     }
 
     function openItem(item) {
-        if (!item)
+        if (!item || isLoading)
             return ;
 
         if (item.sub) {
@@ -309,17 +311,8 @@ PanelWindow {
     }
 
     function ensureSelectedVisible() {
-        if (!activeResultsFlick)
-            return ;
-
-        var itemHeight = 67;
-        var top = selectedIndex * itemHeight;
-        var bottom = top + itemHeight;
-        var maxY = Math.max(0, activeResultsFlick.contentHeight - activeResultsFlick.height);
-        if (top < activeResultsFlick.contentY)
-            activeResultsFlick.contentY = Math.max(0, Math.min(top, maxY));
-        else if (bottom > activeResultsFlick.contentY + activeResultsFlick.height)
-            activeResultsFlick.contentY = Math.max(0, Math.min(bottom - activeResultsFlick.height, maxY));
+        if (activeResultsFlick && activeResultsFlick.ensureIndexVisible)
+            activeResultsFlick.ensureIndexVisible(selectedIndex);
     }
 
     function clampResultsScroll() {
@@ -335,10 +328,12 @@ PanelWindow {
             menuWindow.opened = false;
             event.accepted = true;
         } else if (event.key === Qt.Key_Down || (event.key === Qt.Key_J && event.modifiers === Qt.ControlModifier)) {
+            suppressHoverSelection = true;
             selectedIndex = Math.min(selectedIndex + 1, Math.max(visibleItems.length - 1, 0));
             ensureSelectedVisible();
             event.accepted = true;
         } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_K && event.modifiers === Qt.ControlModifier)) {
+            suppressHoverSelection = true;
             selectedIndex = Math.max(selectedIndex - 1, 0);
             ensureSelectedVisible();
             event.accepted = true;
@@ -361,12 +356,14 @@ PanelWindow {
     }
 
     onSearchQueryChanged: {
+        suppressHoverSelection = false;
         selectedIndex = 0;
         if (activeResultsFlick)
             activeResultsFlick.contentY = 0;
 
     }
     onActiveSubmenuChanged: {
+        suppressHoverSelection = false;
         selectedIndex = 0;
         if (activeResultsFlick)
             activeResultsFlick.contentY = 0;

@@ -7,6 +7,7 @@ Item {
 
     property var theme: null
     property var notification: null
+    property var actions: []
     property bool shown: false
     property bool animateTransitions: true
     readonly property string panelBg: theme ? theme.background : "#15110f"
@@ -16,6 +17,7 @@ Item {
     readonly property string inkBg: theme && theme.surface ? theme.surface : "#1b1613"
 
     signal activated()
+    signal actionRequested(var action)
     signal dismissed()
     signal hoverChanged(bool hovered)
 
@@ -24,7 +26,7 @@ Item {
     }
 
     width: 360
-    height: shown ? Math.max(94, Math.min(132, toastBody.implicitHeight + 46)) : 0
+    height: shown ? Math.max(94, toastBody.implicitHeight + 28) : 0
     opacity: shown ? 1 : 0
     clip: true
 
@@ -151,6 +153,53 @@ Item {
                     maximumLineCount: 2
                     elide: Text.ElideRight
                     visible: text !== ""
+                }
+
+                Flow {
+                    width: parent.width
+                    spacing: 5
+                    visible: toast.actions.length > 0
+
+                    Repeater {
+                        model: toast.actions
+
+                        Rectangle {
+                            property var action: modelData
+
+                            width: Math.min(148, Math.max(58, actionText.implicitWidth + 18))
+                            height: 23
+                            color: actionMouse.containsMouse ? toast.panelAccent : toast.inkBg
+                            border.color: toast.panelAccent
+                            border.width: 1
+
+                            Text {
+                                id: actionText
+
+                                anchors.centerIn: parent
+                                width: parent.width - 12
+                                text: parent.action && parent.action.text !== "" ? parent.action.text.toUpperCase() : (parent.action && parent.action.identifier === "default" ? "OPEN" : "ACTION")
+                                color: actionMouse.containsMouse ? toast.panelBg : toast.panelAccent
+                                font.pixelSize: 8
+                                font.bold: true
+                                elide: Text.ElideRight
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+
+                            MouseArea {
+                                id: actionMouse
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: toast.hoverChanged(true)
+                                onExited: toast.hoverChanged(false)
+                                onClicked: mouse => {
+                                    mouse.accepted = true
+                                    toast.actionRequested(parent.action)
+                                }
+                            }
+                        }
+                    }
                 }
 
             }

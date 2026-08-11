@@ -6,7 +6,6 @@ QtObject {
     required property var clipboard
     required property var themeSwitcher
     required property var powerMenu
-    required property var calendarPopup
     required property var mediaPopup
     required property var audioPopup
     required property var networkPopup
@@ -21,7 +20,6 @@ QtObject {
     function toggleCenterPopup(nextScreen) {
         var openHere = mediaPopup.opened && nextScreen && mediaPopup.screen === nextScreen
         calendarRefreshRequested()
-        calendarPopup.opened = false
         audioPopup.opened = false
         networkPopup.opened = false
         bluetoothPopup.opened = false
@@ -45,7 +43,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -62,7 +59,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -80,7 +76,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -98,7 +93,6 @@ QtObject {
             launcher.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -116,7 +110,6 @@ QtObject {
             launcher.opened = false
             clipboard.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -135,32 +128,12 @@ QtObject {
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            calendarPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
             if (nextScreen) powerMenu.screen = nextScreen
         }
         powerMenu.opened = open
-    }
-
-    function setCalendarOpen(open, nextScreen) {
-        if (open) {
-            networkPopup.opened = false
-            bluetoothPopup.opened = false
-            vpnPopup.opened = false
-            menu.opened = false
-            launcher.opened = false
-            clipboard.opened = false
-            themeSwitcher.opened = false
-            powerMenu.opened = false
-            mediaPopup.opened = false
-            audioPopup.opened = false
-            aboutPopup.opened = false
-            notifications.menuOpened = false
-            if (nextScreen) calendarPopup.screen = nextScreen
-        }
-        calendarPopup.opened = open
     }
 
     function setAudioOpen(open, nextScreen) {
@@ -173,7 +146,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -192,7 +164,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             notifications.menuOpened = false
@@ -208,7 +179,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -263,7 +233,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -286,7 +255,6 @@ QtObject {
             clipboard.opened = false
             themeSwitcher.opened = false
             powerMenu.opened = false
-            calendarPopup.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false

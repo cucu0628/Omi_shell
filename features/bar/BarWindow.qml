@@ -26,6 +26,9 @@ PanelWindow {
     property bool bluetoothEnabled: false
     property bool bluetoothConnected: false
     property bool bluetoothPopupOpen: false
+    property bool batteryAvailable: false
+    property int batteryPercentage: 0
+    property bool batteryCharging: false
     property bool notificationsDnd: false
     property bool notificationsHasToast: false
     property int notificationsUnreadCount: 0
@@ -140,6 +143,13 @@ PanelWindow {
             BtopStatusItem {
                 theme: root.theme
                 onClicked: root.launchCommand(["sh", "-c", "exec \"$HOME/.config/quickshell/omi_shell/scripts/floating-terminal\" btop"])
+            }
+
+            BatteryStatusItem {
+                theme: root.theme
+                available: root.batteryAvailable
+                percentage: root.batteryPercentage
+                charging: root.batteryCharging
             }
 
             PowerStatusItem {

@@ -10,6 +10,8 @@ Item {
     property bool toastVisible: false
     property bool menuOpened: false
     property var history: []
+    property var toastQueue: []
+    property var currentActions: []
     property int unreadCount: 0
     property int nextEntryId: 1
     property int currentEntryId: -1
@@ -24,16 +26,96 @@ Item {
         return (value || "").toString().replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim()
     }
 
-    function displayNotification(notification) {
-        var icon = notification.image !== "" ? notification.image : (notification.appIcon !== "" ? Quickshell.iconPath(notification.appIcon, true) : "")
+    function historyEntry(entryId) {
+        for (var i = 0; i < history.length; i++) {
+            if (history[i].id === entryId) return history[i]
+        }
+        return null
+    }
+
+    function removeQueuedEntry(entryId) {
+        var nextQueue = []
+        for (var i = 0; i < toastQueue.length; i++) {
+            if (toastQueue[i] !== entryId) nextQueue.push(toastQueue[i])
+        }
+        toastQueue = nextQueue
+    }
+
+    function clearCurrentToast() {
+        toastVisible = false
+        currentNotification = null
+        currentActions = []
+        currentEntryId = -1
+        expireTimer.stop()
+    }
+
+    function showNextToast() {
+        if (currentNotification || menuOpened || dnd) return
+
+        while (toastQueue.length > 0) {
+            var entryId = toastQueue[0]
+            toastQueue = toastQueue.slice(1)
+            var entry = historyEntry(entryId)
+            if (!entry || !entry.notification) continue
+
+            currentNotification = entry.notification
+            currentActions = entry.actions || []
+            currentEntryId = entryId
+            toastVisible = true
+            expireTimer.interval = Math.max(2600, Math.min(7000, entry.notification.expireTimeout > 0 ? entry.notification.expireTimeout * 1000 : 4200))
+            expireTimer.restart()
+            return
+        }
+    }
+
+    function refreshNotification(entryId) {
+        var entry = historyEntry(entryId)
+        if (!entry || !entry.notification) return
+
+        var notification = entry.notification
+        var actions = []
         var defaultAction = null
         for (var actionIndex = 0; actionIndex < notification.actions.length; actionIndex++) {
-            if (notification.actions[actionIndex].identifier === "default") {
-                defaultAction = notification.actions[actionIndex]
-                break
-            }
+            var action = notification.actions[actionIndex]
+            actions.push(action)
+            if (action.identifier === "default") defaultAction = action
+        }
+
+        entry.appName = cleanText(notification.appName || "Notification")
+        entry.summary = cleanText(notification.summary)
+        entry.body = cleanText(notification.body)
+        entry.icon = notification.image !== "" ? notification.image : (notification.appIcon !== "" ? Quickshell.iconPath(notification.appIcon, true) : "")
+        entry.critical = notification.urgency === NotificationUrgency.Critical
+        entry.actions = actions
+        entry.defaultAction = defaultAction
+        history = history.slice()
+
+        if (currentEntryId === entryId) currentActions = actions
+    }
+
+    function scheduleNotificationRefresh(entryId) {
+        Qt.callLater(function() { controller.refreshNotification(entryId) })
+    }
+
+    function displayNotification(notification) {
+        var icon = notification.image !== "" ? notification.image : (notification.appIcon !== "" ? Quickshell.iconPath(notification.appIcon, true) : "")
+        var actions = []
+        var defaultAction = null
+        for (var actionIndex = 0; actionIndex < notification.actions.length; actionIndex++) {
+            var action = notification.actions[actionIndex]
+            actions.push(action)
+            if (action.identifier === "default") defaultAction = action
         }
         var entryId = nextEntryId++
+        notification.tracked = true
+        notification.closed.connect(function() { controller.handleNotificationClosed(entryId) })
+        notification.actionsChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.appNameChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.appIconChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.summaryChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.bodyChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.imageChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
+        notification.urgencyChanged.connect(function() { controller.scheduleNotificationRefresh(entryId) })
         var entry = {
             id: entryId,
             appName: cleanText(notification.appName || "Notification"),
@@ -44,51 +126,55 @@ Item {
             time: Qt.formatTime(new Date(), "HH:mm"),
             unread: !menuOpened,
             notification: notification,
+            actions: actions,
             defaultAction: defaultAction
         }
         var nextHistory = [entry]
         for (var i = 0; i < history.length && i < historyLimit - 1; i++) nextHistory.push(history[i])
+        var droppedNotifications = []
         for (var dropped = historyLimit - 1; dropped < history.length; dropped++) {
             if (history[dropped].unread) unreadCount = Math.max(0, unreadCount - 1)
-            if (history[dropped].notification) history[dropped].notification.expire()
+            removeQueuedEntry(history[dropped].id)
+            if (history[dropped].notification) droppedNotifications.push(history[dropped].notification)
         }
         history = nextHistory
         if (!menuOpened) unreadCount++
-
-        notification.tracked = true
+        for (var expired = 0; expired < droppedNotifications.length; expired++) droppedNotifications[expired].expire()
 
         if (dnd || menuOpened) {
             return
         }
 
-        currentNotification = notification
-        currentEntryId = entryId
-        toastVisible = true
-        expireTimer.interval = Math.max(2600, Math.min(7000, notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 4200))
-        expireTimer.restart()
+        toastQueue = toastQueue.concat([entryId])
+        showNextToast()
     }
 
     function closeToast(explicitClose) {
         if (!currentNotification) return
-        var notification = currentNotification
         var entryId = currentEntryId
-        toastVisible = false
-        currentNotification = null
-        currentEntryId = -1
-        expireTimer.stop()
+        clearCurrentToast()
         if (explicitClose) removeHistory(entryId, true)
+        showNextToast()
     }
 
     function activateNotification() {
         if (!currentNotification) return
 
         var notification = currentNotification
-        toastVisible = false
-        currentNotification = null
         var entryId = currentEntryId
-        currentEntryId = -1
-        expireTimer.stop()
+        clearCurrentToast()
         activateHistoryEntry(entryId, notification)
+        showNextToast()
+    }
+
+    function activateCurrentAction(action) {
+        if (!currentNotification || !action) return
+
+        var notification = currentNotification
+        var entryId = currentEntryId
+        clearCurrentToast()
+        invokeEntryAction(entryId, action, notification)
+        showNextToast()
     }
 
     function setMenuOpen(open) {
@@ -100,24 +186,54 @@ Item {
     }
 
     function hideToastForMenu() {
-        toastVisible = false
-        currentNotification = null
-        currentEntryId = -1
-        expireTimer.stop()
+        clearCurrentToast()
+        toastQueue = []
     }
 
     function removeHistory(entryId, dismissNotification) {
         var nextHistory = []
+        var removedNotification = null
+        removeQueuedEntry(entryId)
         for (var i = 0; i < history.length; i++) {
             var entry = history[i]
             if (entry.id === entryId) {
                 if (entry.unread) unreadCount = Math.max(0, unreadCount - 1)
-                if (dismissNotification && entry.notification) entry.notification.dismiss()
+                if (dismissNotification && entry.notification) removedNotification = entry.notification
             } else {
                 nextHistory.push(entry)
             }
         }
         history = nextHistory
+        if (removedNotification) removedNotification.dismiss()
+    }
+
+    function invokeEntryAction(entryId, action, fallbackNotification) {
+        var entry = historyEntry(entryId)
+        var notification = entry && entry.notification ? entry.notification : fallbackNotification
+        var resident = notification && notification.resident
+
+        if (action && resident) {
+            if (entry && entry.unread) {
+                entry.unread = false
+                unreadCount = Math.max(0, unreadCount - 1)
+                history = history.slice()
+            }
+            action.invoke()
+            return
+        }
+
+        removeHistory(entryId, false)
+
+        if (action) {
+            action.invoke()
+        } else if (notification) {
+            notification.dismiss()
+        }
+    }
+
+    function invokeHistoryAction(entryId, action) {
+        if (!action) return
+        invokeEntryAction(entryId, action, null)
     }
 
     function activateHistoryEntry(entryId, fallbackNotification) {
@@ -128,18 +244,38 @@ Item {
                 break
             }
         }
-        removeHistory(entryId, false)
-        var notification = selectedEntry && selectedEntry.notification ? selectedEntry.notification : fallbackNotification
-        if (selectedEntry && selectedEntry.defaultAction) selectedEntry.defaultAction.invoke()
-        if (notification) notification.dismiss()
+        invokeEntryAction(entryId, selectedEntry ? selectedEntry.defaultAction : null, fallbackNotification)
+    }
+
+    function handleNotificationClosed(entryId) {
+        removeQueuedEntry(entryId)
+        var wasCurrent = currentEntryId === entryId
+        if (wasCurrent) clearCurrentToast()
+
+        var nextHistory = []
+        for (var i = 0; i < history.length; i++) {
+            var entry = history[i]
+            if (entry.id === entryId) {
+                entry.notification = null
+                entry.actions = []
+                entry.defaultAction = null
+            }
+            nextHistory.push(entry)
+        }
+        history = nextHistory
+        if (wasCurrent) Qt.callLater(showNextToast)
     }
 
     function clearHistory() {
+        var notifications = []
         for (var i = 0; i < history.length; i++) {
-            if (history[i].notification) history[i].notification.dismiss()
+            if (history[i].notification) notifications.push(history[i].notification)
         }
+        clearCurrentToast()
+        toastQueue = []
         history = []
         unreadCount = 0
+        for (var dismissed = 0; dismissed < notifications.length; dismissed++) notifications[dismissed].dismiss()
     }
 
     function pauseToastTimer() {
@@ -150,6 +286,8 @@ Item {
         if (toastVisible) expireTimer.restart()
     }
 
+    onDndChanged: if (dnd) toastQueue = []
+
     NotificationServer {
         actionsSupported: true
         imageSupported: true
@@ -157,18 +295,6 @@ Item {
         bodyMarkupSupported: false
         keepOnReload: false
         onNotification: (notification) => controller.displayNotification(notification)
-    }
-
-    Connections {
-        target: controller.currentNotification
-        enabled: target !== null
-        ignoreUnknownSignals: true
-
-        function onClosed() {
-            controller.toastVisible = false
-            controller.currentNotification = null
-            controller.currentEntryId = -1
-        }
     }
 
     Timer {

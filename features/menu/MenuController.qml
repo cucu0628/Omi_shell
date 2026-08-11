@@ -33,10 +33,17 @@ Item {
         id: dynamicTimeout
         interval: 3500
         onTriggered: {
-            dynamicFetcher.running = false
-            controller.isLoading = false
+            dynamicFetcher.signal(9)
             if (controller.activeSubmenu.length === 0) controller.activeSubmenu = []
         }
+    }
+
+    function cancelDynamic() {
+        dynamicTimeout.stop()
+        if (dynamicFetcher.running)
+            dynamicFetcher.signal(9)
+        else
+            isLoading = false
     }
 
     function loadDynamicOutput(output) {
@@ -96,9 +103,14 @@ Item {
             var line = lines[i].trim()
             if (line === "") continue
 
-            var arrowIndex = line.indexOf("→")
-            var shortcut = arrowIndex >= 0 ? line.slice(0, arrowIndex).trim() : line
-            var action = arrowIndex >= 0 ? line.slice(arrowIndex + 1).trim() : ""
+            var separatorIndex = line.indexOf("\t")
+            var separatorLength = 1
+            if (separatorIndex < 0) {
+                separatorIndex = line.indexOf("→")
+                separatorLength = 1
+            }
+            var shortcut = separatorIndex >= 0 ? line.slice(0, separatorIndex).trim() : line
+            var action = separatorIndex >= 0 ? line.slice(separatorIndex + separatorLength).trim() : ""
 
             newSub.push({
                 name: shortcut,
@@ -145,7 +157,7 @@ Item {
             if (shortcut === "" && action === "") continue
 
             newSub.push({
-                name: shortcut,
+                name: shortcut !== "" ? shortcut : "UNREPORTED KEY",
                 icon: "",
                 path: action,
                 readonly: true
@@ -172,7 +184,7 @@ Item {
         currentDynamicPath = path || activeCategory
         currentDynamicType = "keybindings"
         dynamicTimeout.restart()
-        dynamicFetcher.command = ["hyprctl", "binds", "-j"]
+        dynamicFetcher.command = ["sh", "-c", "exec \"$HOME/.config/quickshell/omi_shell/scripts/keybindings-list\""]
         dynamicFetcher.running = true
     }
 }

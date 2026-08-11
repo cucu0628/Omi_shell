@@ -25,7 +25,7 @@ QtObject {
         ]},
         { name: "Setup", icon: "", sub: [
             { name: "Network", icon: "", command: "quickshell ipc --path " + shellPath + " call network toggle" },
-            { name: "Bluetooth", icon: "󰂯", command: scriptsPath + "/launch-bluetooth" },
+            { name: "Bluetooth", icon: "󰂯", command: "quickshell ipc --path " + shellPath + " call bluetooth toggle" },
             { name: "Weather Location", icon: "󰖕", command: scriptsPath + "/floating-terminal " + scriptsPath + "/weather-location" },
             { name: "Power Profile", icon: "󱐋", dynamic: {
                 cmd: "current=$(powerprofilesctl get) || exit 1; for profile in performance balanced power-saver; do case $profile in performance) label=Performance;; balanced) label=Balanced;; power-saver) label='Power Saver';; esac; [ \"$profile\" = \"$current\" ] && label=\"$label (Active)\"; printf '%s|%s\\n' \"$label\" \"$profile\"; done",
@@ -46,6 +46,7 @@ QtObject {
             { name: "Web App", icon: "", command: scriptsPath + "/floating-terminal " + scriptsPath + "/webapp-remove" },
             { name: "TUI", icon: "", command: scriptsPath + "/floating-terminal " + scriptsPath + "/tui-remove" }
         ]},
+        { name: "Keybindings", icon: "", keybindings: true },
         { name: "System", icon: "", sub: lockscreenMonitorItems.concat([
             { name: "Lock", icon: "", command: "quickshell ipc --path " + shellPath + " call lock lock" },
             { name: "Power Menu", icon: "󰐥", command: "quickshell ipc --path " + shellPath + " call power toggle" },

@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bind_file="${HYPR_BINDINGS_FILE:-$HOME/.config/hypr/dms/binds.lua}"
+
+if [[ ! -r "$bind_file" ]]; then
+    exec hyprctl binds -j
+fi
+
+direction_name() {
+    case "$1" in
+        l) printf 'left' ;;
+        r) printf 'right' ;;
+        u) printf 'up' ;;
+        d) printf 'down' ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
+describe_command() {
+    local command="$1"
+
+    if [[ "$command" =~ omi_shell[^\"]*[[:space:]]ipc[[:space:]]call[[:space:]](.+) ]]; then
+        printf 'Omi: %s' "${BASH_REMATCH[1]}"
+    elif [[ "$command" =~ ^dms[[:space:]]ipc[[:space:]]call[[:space:]](.+) ]]; then
+        printf 'DMS: %s' "${BASH_REMATCH[1]}"
+    else
+        case "$command" in
+            kitty) printf 'Open terminal (Kitty)' ;;
+            nautilus*) printf 'Open file manager' ;;
+            zen-browser*) printf 'Open browser' ;;
+            code) printf 'Open VS Code' ;;
+            *) printf 'Run: %s' "$command" ;;
+        esac
+    fi
+}
+
+describe_action() {
+    local action="$1"
+    local shortcut="${2:-}"
+    local direction workspace command x y
+
+    if [[ "$action" =~ description[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        printf '%s' "${BASH_REMATCH[1]}"
+    elif [[ "$action" =~ hl\.dsp\.exec_cmd\(\"([^\"]*)\"\) ]]; then
+        describe_command "${BASH_REMATCH[1]}"
+    elif [[ "$action" =~ hl\.dsp\.exec_cmd\(\[\[(.*)\]\]\) ]]; then
+        describe_command "${BASH_REMATCH[1]}"
+    elif [[ "$action" == *"hl.dsp.exit("* ]]; then
+        printf 'Exit Hyprland'
+    elif [[ "$action" == *"hl.dsp.window.close("* ]]; then
+        printf 'Close active window'
+    elif [[ "$action" == *"hl.dsp.window.fullscreen"* && "$action" == *'mode = "fullscreen"'* ]]; then
+        printf 'Toggle fullscreen'
+    elif [[ "$action" == *"hl.dsp.window.fullscreen"* && "$action" == *'action = "set"'* ]]; then
+        printf 'Maximize window'
+    elif [[ "$action" == *"hl.dsp.window.fullscreen"* ]]; then
+        printf 'Toggle maximize'
+    elif [[ "$action" == *"hl.dsp.window.float("* ]]; then
+        printf 'Toggle floating window'
+    elif [[ "$action" == *"hl.dsp.group.toggle("* ]]; then
+        printf 'Toggle window group'
+    elif [[ "$action" == *"hl.dsp.window.drag("* ]]; then
+        printf 'Move window with mouse'
+    elif [[ "$action" == *"hl.dsp.window.resize()"* ]]; then
+        printf 'Resize window with mouse'
+    elif [[ "$action" == *"hl.dsp.window.resize"* && "$action" =~ x[[:space:]]*=[[:space:]]*(-?[0-9]+).*y[[:space:]]*=[[:space:]]*(-?[0-9]+) ]]; then
+        x="${BASH_REMATCH[1]}"
+        y="${BASH_REMATCH[2]}"
+        printf 'Resize window (%s, %s)' "$x" "$y"
+    elif [[ "$action" == *"hl.dsp.window.move"* && "$action" =~ monitor[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        direction="$(direction_name "${BASH_REMATCH[1]}")"
+        printf 'Move window to monitor %s' "$direction"
+    elif [[ "$action" == *"hl.dsp.window.move"* && "$action" =~ workspace[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        workspace="${BASH_REMATCH[1]}"
+        case "$workspace" in
+            e+1) printf 'Move window to next workspace' ;;
+            e-1) printf 'Move window to previous workspace' ;;
+            *) printf 'Move window to workspace %s' "$workspace" ;;
+        esac
+    elif [[ "$action" == *"hl.dsp.window.move"* && "$action" =~ direction[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        direction="$(direction_name "${BASH_REMATCH[1]}")"
+        printf 'Move window %s' "$direction"
+    elif [[ "$action" == *"hl.dsp.focus"* && "$action" =~ monitor[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        direction="$(direction_name "${BASH_REMATCH[1]}")"
+        printf 'Focus monitor %s' "$direction"
+    elif [[ "$action" == *"hl.dsp.focus"* && "$action" =~ workspace[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        workspace="${BASH_REMATCH[1]}"
+        case "$workspace" in
+            e+1) printf 'Switch to next workspace' ;;
+            e-1) printf 'Switch to previous workspace' ;;
+            *) printf 'Switch to workspace %s' "$workspace" ;;
+        esac
+    elif [[ "$action" == *"hl.dsp.focus"* && "$action" =~ window[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        printf 'Focus %s window' "${BASH_REMATCH[1]}"
+    elif [[ "$action" == *"hl.dsp.focus"* && "$action" =~ direction[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+        direction="$(direction_name "${BASH_REMATCH[1]}")"
+        printf 'Focus window %s' "$direction"
+    elif [[ "$action" =~ hl\.dsp\.layout\(\"([^\"]+)\"\) ]]; then
+        printf 'Layout: %s' "${BASH_REMATCH[1]}"
+    elif [[ "$action" == *"hl.dsp.dpms("* ]]; then
+        printf 'Toggle displays'
+    elif [[ "$action" == function* ]]; then
+        if [[ "$shortcut" == "ALT + Tab" ]]; then
+            printf 'Cycle to next window'
+        else
+            printf 'Custom Lua action'
+        fi
+    else
+        action="${action%%, \{*}"
+        action="${action#hl.dsp.}"
+        printf '%s' "$action"
+    fi
+}
+
+while IFS= read -r line; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    [[ "$line" == --* ]] && continue
+
+    if [[ "$line" =~ ^hl\.bind\(\"([^\"]+)\"[[:space:]]*,[[:space:]]*(.*)$ ]]; then
+        shortcut="${BASH_REMATCH[1]}"
+        action="${BASH_REMATCH[2]}"
+        printf '%s\t%s\n' "$shortcut" "$(describe_action "$action" "$shortcut")"
+    fi
+done < "$bind_file"

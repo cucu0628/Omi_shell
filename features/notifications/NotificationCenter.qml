@@ -24,6 +24,7 @@ Item {
     signal clearRequested()
     signal itemDeleteRequested(int entryId)
     signal itemActivated(int entryId)
+    signal itemActionRequested(int entryId, var action)
 
     visible: transitionActive
 
@@ -243,8 +244,11 @@ Item {
                                     model: center.history
 
                                     Rectangle {
+                                        id: historyEntry
+
+                                        property var entry: modelData
                                         width: historyColumn.width
-                                        height: center.notificationRowHeight
+                                        height: center.notificationRowHeight + (actionFlow.visible ? actionFlow.implicitHeight + 8 : 0)
                                 color: itemMouse.containsMouse ? center.inkBg : "transparent"
                                 border.color: modelData.critical ? center.panelAccent : "transparent"
                                 border.width: 1
@@ -269,6 +273,7 @@ Item {
                                     anchors.fill: parent
                                     anchors.margins: 9
                                     anchors.leftMargin: 11
+                                    anchors.bottomMargin: actionFlow.visible ? actionFlow.implicitHeight + 9 : 9
                                     spacing: 9
 
                                     Rectangle {
@@ -378,6 +383,58 @@ Item {
 
                                     }
 
+                                }
+
+                                Flow {
+                                    id: actionFlow
+
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 56
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 9
+                                    anchors.bottom: parent.bottom
+                                    anchors.bottomMargin: 7
+                                    spacing: 5
+                                    visible: historyEntry.entry.actions && historyEntry.entry.actions.length > 0
+
+                                    Repeater {
+                                        model: historyEntry.entry.actions || []
+
+                                        Rectangle {
+                                            property var action: modelData
+
+                                            width: Math.min(130, Math.max(54, historyActionText.implicitWidth + 16))
+                                            height: 21
+                                            color: historyActionMouse.containsMouse ? center.panelAccent : center.inkBg
+                                            border.color: center.panelAccent
+                                            border.width: 1
+
+                                            Text {
+                                                id: historyActionText
+
+                                                anchors.centerIn: parent
+                                                width: parent.width - 10
+                                                text: parent.action && parent.action.text !== "" ? parent.action.text.toUpperCase() : (parent.action && parent.action.identifier === "default" ? "OPEN" : "ACTION")
+                                                color: historyActionMouse.containsMouse ? center.panelBg : center.panelAccent
+                                                font.pixelSize: 8
+                                                font.bold: true
+                                                elide: Text.ElideRight
+                                                horizontalAlignment: Text.AlignHCenter
+                                            }
+
+                                            MouseArea {
+                                                id: historyActionMouse
+
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: mouse => {
+                                                    mouse.accepted = true
+                                                    center.itemActionRequested(historyEntry.entry.id, parent.action)
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
 
                             }

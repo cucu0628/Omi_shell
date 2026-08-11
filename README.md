@@ -18,7 +18,8 @@ Kitty, and a custom Hyprland Lua setup.
 
 - Per-monitor wallpaper layers and top bars with Hyprland workspaces.
 - MPRIS media status, Cava visualization, clock, network, VPN, audio,
-  notifications, system tray, system monitor, and power controls.
+  notifications, system tray, system monitor, optional battery status, and
+  power controls.
 - Application launcher with desktop-entry search and frecency ranking.
 - Launcher modes for calculator (`=`), shell commands (`>`), web search (`?`),
   and emoji search (`:`).
@@ -31,7 +32,7 @@ Kitty, and a custom Hyprland Lua setup.
 - Screenshot modes for smart selection, windows, workspaces, and regions.
 - Multi-monitor Wayland lock screen with PAM authentication.
 - Utility menu for Arch packages, AUR packages, web apps, TUI launchers,
-  Bluetooth, power profiles, and shell configuration.
+  Bluetooth, power profiles, Hyprland keybindings, and shell configuration.
 
 Popups are loaded on demand and coordinated so that overlapping shell surfaces
 do not remain open at the same time.
@@ -42,7 +43,7 @@ do not remain open at the same time.
 
 - A Wayland session running Hyprland.
 - Quickshell with Hyprland, PipeWire, MPRIS, notifications, system tray, PAM,
-  Polkit, and Wayland support.
+  Polkit, UPower, and Wayland support.
 - PipeWire and NetworkManager.
 - A Nerd Font for the shell icons, preferably `Symbols Nerd Font Mono`.
 - Standard command-line tools such as `bash`, `curl`, `jq`, `ip`, `nmcli`, and
@@ -60,6 +61,7 @@ require the corresponding command:
 | Media position control | `gdbus` |
 | Audio control panel | `pavucontrol` |
 | Audio visualization | `cava` (optional) |
+| Battery status | UPower daemon (optional) |
 | Weather | `curl` and internet access to Open-Meteo |
 | Screenshot capture | `grim`, `slurp`, `wayfreeze`, `magick`, `hyprctl`, `jq` |
 | Screenshot extras | `satty`, `wl-copy`, `notify-send`, `xdg-user-dir` |

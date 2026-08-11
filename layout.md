@@ -25,6 +25,7 @@ omi_shell/
 │   ├── WallpaperController.qml       # Háttérkép állapot és monitorablakok
 │   ├── WorkspaceController.qml       # Hyprland workspace állapot
 │   ├── AudioSummaryController.qml    # Panel hangerőállapot
+│   ├── BatteryStatusController.qml   # Opcionális rendszerakku állapot
 │   ├── VpnStatusController.qml       # Aktív VPN lekérdezése
 │   ├── MprisController.qml           # Aktív médialejátszó kiválasztása
 │   └── CommandRunner.qml             # Megosztott parancsindítás, ahol indokolt
@@ -54,6 +55,7 @@ omi_shell/
 │   │   ├── AudioStatusItem.qml
 │   │   ├── NotificationStatusItem.qml
 │   │   ├── BtopStatusItem.qml
+│   │   ├── BatteryStatusItem.qml
 │   │   └── PowerStatusItem.qml
 │   │
 │   ├── menu/
@@ -113,8 +115,6 @@ omi_shell/
 │   │   ├── WallpaperFilmstrip.qml
 │   │   └── ThemeArchive.qml
 │   │
-│   ├── calendar/
-│   │   └── CalendarPopup.qml
 │   │
 │   ├── power/
 │   │   ├── PowerMenu.qml
@@ -155,6 +155,7 @@ omi_shell/
 │   ├── floating-terminal
 │   ├── launch-wifi
 │   ├── launch-bluetooth
+│   ├── keybindings-list
 │   ├── pkg-install
 │   ├── pkg-remove
 │   ├── aur-install

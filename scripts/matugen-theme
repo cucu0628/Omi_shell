@@ -26,7 +26,15 @@ if command -v matugen >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && [[ -r 
   # The most saturated sample is often a tiny highlight and can tint an
   # otherwise neutral wallpaper incorrectly. Use Matugen's dominant extracted
   # source colour for a stable palette that reflects the whole image.
-  json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-tonal-spot --source-color-index 0 2>/dev/null || true)
+  fallback_color="#808080"
+  json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-tonal-spot \
+    --source-color-index 0 --fallback-color "$fallback_color" 2>/dev/null || true)
+  # Matugen otherwise falls back to blue when a monochrome image has no usable
+  # source colour. Keep such wallpapers neutral instead of inventing a hue.
+  if [[ $(jq -r '.colors.source_color.default.color // empty' <<<"$json") == "$fallback_color" ]]; then
+    json=$(matugen image "$wallpaper" --json hex --dry-run --mode dark --type scheme-monochrome \
+      --source-color-index 0 --fallback-color "$fallback_color" 2>/dev/null || true)
+  fi
   if [[ -n $json ]]; then
     background=$(jq -r '.colors.background.default.color // .colors.surface.default.color // empty' <<<"$json")
     foreground=$(jq -r '.colors.on_surface.default.color // .colors.on_background.default.color // empty' <<<"$json")

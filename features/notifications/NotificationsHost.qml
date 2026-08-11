@@ -32,7 +32,7 @@ PanelWindow {
 
     visible: menuExpanded || controller.toastVisible || toast.opacity > 0
     implicitWidth: 360
-    implicitHeight: 132
+    implicitHeight: Math.max(132, toast.height)
     color: "transparent"
     anchors { top: true; right: true; bottom: menuExpanded; left: menuExpanded }
     margins { top: menuExpanded ? 0 : 34; right: menuExpanded ? 0 : 14 }
@@ -52,8 +52,10 @@ PanelWindow {
         y: 0
         theme: notifyWindow.theme
         notification: controller.currentNotification
+        actions: controller.currentActions
         shown: controller.toastVisible && !controller.menuOpened
         onActivated: controller.activateNotification()
+        onActionRequested: action => controller.activateCurrentAction(action)
         onDismissed: controller.closeToast(true)
         onHoverChanged: (hovered) => {
             if (hovered) controller.pauseToastTimer()
@@ -73,5 +75,6 @@ PanelWindow {
         onClearRequested: controller.clearHistory()
         onItemDeleteRequested: entryId => controller.removeHistory(entryId, true)
         onItemActivated: entryId => controller.activateHistoryEntry(entryId, null)
+        onItemActionRequested: (entryId, action) => controller.invokeHistoryAction(entryId, action)
     }
 }

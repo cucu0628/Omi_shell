@@ -121,8 +121,8 @@ Item {
     IpcHandler {
         target: "bluetooth"
 
-        function toggle(): void { coordinator.toggleBluetooth(focusedScreenProvider()) }
-        function open(): void { coordinator.setBluetoothOpen(true, focusedScreenProvider()) }
+        function toggle(): void { coordinator.toggleBluetooth(coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider()) }
+        function open(): void { coordinator.setBluetoothOpen(true, coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider()) }
         function close(): void { coordinator.setBluetoothOpen(false) }
     }
 
