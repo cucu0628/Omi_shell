@@ -16,6 +16,7 @@ Item {
     property bool active: false
     property string rawName: ""
     property string name: ""
+    property var networkController: null
     property bool cliConnected: false
     readonly property bool nmProton: rawName.indexOf("ProtonVPN") === 0
     // A tunnel nmcli can see counts as up even when the CLI disagrees, which it
@@ -48,9 +49,7 @@ Item {
     visible: false
 
     function refresh() {
-        if (poll.running) return
-        poll.command = ["nmcli", "-t", "-f", "TYPE,NAME", "connection", "show", "--active"]
-        poll.running = true
+        if (networkController) networkController.refresh()
     }
 
     function updatePoll(output) {
@@ -277,15 +276,27 @@ Item {
 
     Component.onCompleted: cliProbe.running = true
 
+    onNetworkControllerChanged: {
+        if (networkController) updatePoll((networkController.vpnActive ? "vpn:" + networkController.vpnName : ""))
+    }
+
+    Connections {
+        target: controller.networkController
+        ignoreUnknownSignals: true
+
+        function onVpnActiveChanged() {
+            controller.updatePoll(controller.networkController.vpnActive ? "vpn:" + controller.networkController.vpnName : "")
+        }
+
+        function onVpnNameChanged() {
+            controller.updatePoll(controller.networkController.vpnActive ? "vpn:" + controller.networkController.vpnName : "")
+        }
+    }
+
     Process {
         id: cliProbe
         command: ["sh", "-c", "command -v protonvpn >/dev/null 2>&1 && echo yes || echo no"]
         stdout: StdioCollector { onStreamFinished: controller.cliAvailable = (this.text || "").trim() === "yes" }
-    }
-
-    Process {
-        id: poll
-        stdout: StdioCollector { onStreamFinished: controller.updatePoll(this.text || "") }
     }
 
     Process {
@@ -335,11 +346,4 @@ Item {
         stderr: StdioCollector { onStreamFinished: vpnAction.failureText = this.text || "" }
     }
 
-    Timer {
-        interval: controller.panelOpen ? 4000 : 12000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: controller.refresh()
-    }
 }

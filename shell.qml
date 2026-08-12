@@ -68,6 +68,7 @@ ShellRoot {
 
     Core.VpnController {
         id: vpnController
+        networkController: networkStatusController
     }
 
     Core.NetworkStatusController {

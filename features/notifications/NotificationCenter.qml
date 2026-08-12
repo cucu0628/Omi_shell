@@ -220,35 +220,29 @@ Item {
 
                     Item {
                         width: parent.width
-                        height: Math.min(historyColumn.height, center.notificationViewportHeight)
+                        height: Math.min(historyList.contentHeight, center.notificationViewportHeight)
                         visible: center.history.length > 0
 
-                        Flickable {
-                            id: historyFlick
+                        ListView {
+                            id: historyList
 
                             anchors.fill: parent
                             anchors.rightMargin: interactive ? 6 : 0
-                            contentWidth: width
-                            contentHeight: historyColumn.height
                             clip: true
                             boundsBehavior: Flickable.StopAtBounds
                             interactive: contentHeight > height
+                            model: center.opened ? center.history : []
+                            spacing: center.notificationGap
+                            reuseItems: true
+                            cacheBuffer: center.notificationRowHeight
 
-                            Column {
-                                id: historyColumn
+                            delegate: Rectangle {
+                                id: historyEntry
 
-                                width: parent.width
-                                spacing: center.notificationGap
-
-                                Repeater {
-                                    model: center.history
-
-                                    Rectangle {
-                                        id: historyEntry
-
-                                        property var entry: modelData
-                                        width: historyColumn.width
-                                        height: center.notificationRowHeight + (actionFlow.visible ? actionFlow.implicitHeight + 8 : 0)
+                                required property var modelData
+                                property var entry: modelData
+                                width: ListView.view.width
+                                height: center.notificationRowHeight + (actionFlow.visible ? actionFlow.implicitHeight + 8 : 0)
                                 color: itemMouse.containsMouse ? center.inkBg : "transparent"
                                 border.color: modelData.critical ? center.panelAccent : "transparent"
                                 border.width: 1
@@ -290,7 +284,7 @@ Item {
 
                                             anchors.fill: parent
                                             anchors.margins: 6
-                                            source: center.opened ? modelData.icon : ""
+                                            source: modelData.icon
                                             sourceSize: Qt.size(72, 72)
                                             fillMode: Image.PreserveAspectFit
                                             asynchronous: true
@@ -437,10 +431,6 @@ Item {
                                     }
                                 }
 
-                            }
-
-                        }
-
                     }
 
                     Rectangle {
@@ -449,18 +439,18 @@ Item {
                         anchors.bottom: parent.bottom
                         width: 2
                         color: center.mutedFg
-                        opacity: historyFlick.interactive ? 0.18 : 0
+                        opacity: historyList.interactive ? 0.18 : 0
                     }
 
                     Rectangle {
                         anchors.right: parent.right
                         width: 2
-                        height: historyFlick.contentHeight > 0
-                            ? Math.max(24, parent.height * historyFlick.visibleArea.heightRatio)
+                        height: historyList.contentHeight > 0
+                            ? Math.max(24, parent.height * historyList.visibleArea.heightRatio)
                             : 0
-                        y: historyFlick.visibleArea.yPosition * parent.height
+                        y: historyList.visibleArea.yPosition * parent.height
                         color: center.panelAccent
-                        opacity: historyFlick.interactive ? 0.9 : 0
+                        opacity: historyList.interactive ? 0.9 : 0
                     }
 
                 }

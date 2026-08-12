@@ -129,12 +129,5 @@ Item {
         Keys.onEscapePressed: ambient.greeter.clearPassword()
     }
 
-    Timer {
-        interval: 200
-        running: true
-        repeat: true
-        onTriggered: {
-            if (!ambientPasswordInput.activeFocus) ambientPasswordInput.forceActiveFocus()
-        }
-    }
+    Component.onCompleted: Qt.callLater(ambientPasswordInput.forceActiveFocus)
 }

@@ -71,10 +71,33 @@ Item {
         activePlayer = chooseActivePlayer()
     }
 
-    Timer {
-        interval: 500
-        running: true
-        repeat: true
-        onTriggered: controller.updateActivePlayer()
+    Component.onCompleted: updateActivePlayer()
+
+    Connections {
+        target: Mpris.players
+
+        function onValuesChanged() {
+            controller.updateActivePlayer()
+        }
+    }
+
+    Instantiator {
+        model: Mpris.players
+
+        delegate: Item {
+            required property var modelData
+
+            width: 0
+            height: 0
+            visible: false
+
+            Connections {
+                target: modelData
+
+                function onPlaybackStateChanged() { controller.updateActivePlayer() }
+                function onTrackTitleChanged() { controller.updateActivePlayer() }
+                function onTrackArtistChanged() { controller.updateActivePlayer() }
+            }
+        }
     }
 }

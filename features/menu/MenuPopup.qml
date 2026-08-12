@@ -422,7 +422,17 @@ PanelWindow {
         width: Math.min(840, menuWindow.width - 32)
         height: Math.min(500, Math.max(350, 220 + Math.min(visibleItems.length, 6) * 46), menuWindow.height - 40)
         opacity: menuWindow.opened ? 1 : 0
-        scale: menuWindow.opened ? 1 : 0.98
+        scale: menuWindow.opened ? 1 : 0.96
+        transform: Translate {
+            y: menuWindow.opened ? 0 : 12
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: menuWindow.opened ? 240 : 120
+                    easing.type: menuWindow.opened ? Easing.OutQuart : Easing.InQuad
+                }
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -459,16 +469,16 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: menuWindow.opened ? 160 : 110
+                easing.type: menuWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: 210
-                easing.type: Easing.OutCubic
+                duration: menuWindow.opened ? 260 : 130
+                easing.type: menuWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }

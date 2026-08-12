@@ -8,39 +8,110 @@ Item {
     property int cpuUsage: 0
     property int ramUsage: 0
     property int diskUsage: 0
+    property double previousCpuIdle: -1
+    property double previousCpuTotal: -1
 
     width: 0
     height: 0
     visible: false
 
-    onActiveChanged: if (active) refresh()
-
-    function parse(output) {
-        var lines = (output || "").split("\n")
-        for (var i = 0; i < lines.length; i++) {
-            var parts = lines[i].split("=")
-            if (parts.length !== 2) continue
-            var value = Math.max(0, Math.min(100, parseInt(parts[1]) || 0))
-            if (parts[0] === "cpu") cpuUsage = value
-            else if (parts[0] === "ram") ramUsage = value
-            else if (parts[0] === "disk") diskUsage = value
+    onActiveChanged: {
+        if (active) {
+            previousCpuIdle = -1
+            previousCpuTotal = -1
+            requestRefresh()
+            initialCpuSample.start()
+            refreshDisk()
+        } else {
+            initialCpuSample.stop()
         }
     }
 
-    function refresh() {
-        loader.command = ["sh", "-c", "read cpu user nice system idle iowait irq softirq steal guest guest_nice < /proc/stat; idle1=$((idle+iowait)); total1=$((user+nice+system+idle+iowait+irq+softirq+steal)); sleep 0.25; read cpu user nice system idle iowait irq softirq steal guest guest_nice < /proc/stat; idle2=$((idle+iowait)); total2=$((user+nice+system+idle+iowait+irq+softirq+steal)); dt=$((total2-total1)); di=$((idle2-idle1)); if [ \"$dt\" -gt 0 ]; then cpu=$(( (100*(dt-di))/dt )); else cpu=0; fi; printf 'cpu=%s\n' \"$cpu\"; free | awk '/^Mem:/{print \"ram=\" int(($2-$7)*100/$2)}'; df -P / | awk 'NR==2{gsub(/%/,\"\",$5); print \"disk=\" $5}'"]
-        loader.running = true
+    function requestRefresh() {
+        cpuFile.reload()
+        memoryFile.reload()
+    }
+
+    function updateCpu(text) {
+        if (!active) return
+        var firstLine = (text || "").split("\n")[0]
+        var cpuFields = firstLine.trim().split(/\s+/)
+        if (cpuFields.length >= 8 && cpuFields[0] === "cpu") {
+            var idle = Number(cpuFields[4]) + Number(cpuFields[5])
+            var total = 0
+            for (var i = 1; i < cpuFields.length; i++) total += Number(cpuFields[i]) || 0
+            if (previousCpuTotal >= 0 && total > previousCpuTotal) {
+                cpuUsage = Math.max(0, Math.min(100, Math.round(100 * (1 - (idle - previousCpuIdle) / (total - previousCpuTotal)))))
+            }
+            previousCpuIdle = idle
+            previousCpuTotal = total
+        }
+    }
+
+    function updateMemory(text) {
+        if (!active) return
+        var memory = {}
+        var memoryLines = (text || "").split("\n")
+        for (var j = 0; j < memoryLines.length; j++) {
+            var match = memoryLines[j].match(/^(MemTotal|MemAvailable):\s+(\d+)/)
+            if (match) memory[match[1]] = Number(match[2])
+        }
+        if (memory.MemTotal > 0) {
+            ramUsage = Math.max(0, Math.min(100, Math.round(100 * (memory.MemTotal - memory.MemAvailable) / memory.MemTotal)))
+        }
+    }
+
+    function refreshDisk() {
+        if (!diskLoader.running) diskLoader.running = true
+    }
+
+    function parseDisk(output) {
+        var lines = (output || "").trim().split("\n")
+        if (lines.length < 2) return
+        var fields = lines[lines.length - 1].trim().split(/\s+/)
+        if (fields.length < 5) return
+        diskUsage = Math.max(0, Math.min(100, parseInt(fields[4]) || 0))
+    }
+
+    FileView {
+        id: cpuFile
+        path: "/proc/stat"
+        preload: true
+        printErrors: false
+        onLoaded: stats.updateCpu(cpuFile.text())
+    }
+
+    FileView {
+        id: memoryFile
+        path: "/proc/meminfo"
+        preload: true
+        printErrors: false
+        onLoaded: stats.updateMemory(memoryFile.text())
     }
 
     Process {
-        id: loader
-        stdout: StdioCollector { onStreamFinished: stats.parse(this.text || "") }
+        id: diskLoader
+        command: ["df", "-P", "/"]
+        stdout: StdioCollector { onStreamFinished: stats.parseDisk(this.text || "") }
+    }
+
+    Timer {
+        id: initialCpuSample
+        interval: 300
+        onTriggered: cpuFile.reload()
     }
 
     Timer {
         interval: 5000
         running: stats.active
         repeat: true
-        onTriggered: stats.refresh()
+        onTriggered: stats.requestRefresh()
+    }
+
+    Timer {
+        interval: 60000
+        running: stats.active
+        repeat: true
+        onTriggered: stats.refreshDisk()
     }
 }

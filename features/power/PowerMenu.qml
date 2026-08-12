@@ -146,7 +146,17 @@ PanelWindow {
         width: Math.min(620, powerWindow.width - 32)
         height: Math.min(340, powerWindow.height - 40)
         opacity: opened ? 1 : 0
-        scale: opened ? 1 : 0.98
+        scale: opened ? 1 : 0.96
+        transform: Translate {
+            y: powerWindow.opened ? 0 : 12
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: powerWindow.opened ? 240 : 120
+                    easing.type: powerWindow.opened ? Easing.OutQuart : Easing.InQuad
+                }
+            }
+        }
         focus: opened
         Keys.onPressed: (event) => {
             return handleKey(event);
@@ -262,16 +272,16 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 170
-                easing.type: Easing.OutCubic
+                duration: powerWindow.opened ? 160 : 110
+                easing.type: powerWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
+                duration: powerWindow.opened ? 260 : 130
+                easing.type: powerWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }

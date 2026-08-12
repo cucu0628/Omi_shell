@@ -152,8 +152,10 @@ Item {
     function closeToast(explicitClose) {
         if (!currentNotification) return
         var entryId = currentEntryId
+        var notification = currentNotification
         clearCurrentToast()
         if (explicitClose) removeHistory(entryId, true)
+        else if (!notification.resident) notification.expire()
         showNextToast()
     }
 

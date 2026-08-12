@@ -88,9 +88,13 @@ PanelWindow {
         width: Math.min(860, parent.width - 44)
         height: Math.min(aboutWindow.frameHeight, parent.height - 64)
         opacity: opened ? 1 : 0
-        scale: opened ? 1 : 0.98
-        Behavior on opacity { NumberAnimation { duration: 170; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        scale: opened ? 1 : 0.96
+        transform: Translate {
+            y: aboutWindow.opened ? 0 : 12
+            Behavior on y { NumberAnimation { duration: aboutWindow.opened ? 240 : 120; easing.type: aboutWindow.opened ? Easing.OutQuart : Easing.InQuad } }
+        }
+        Behavior on opacity { NumberAnimation { duration: aboutWindow.opened ? 160 : 110; easing.type: aboutWindow.opened ? Easing.OutQuart : Easing.InQuad } }
+        Behavior on scale { NumberAnimation { duration: aboutWindow.opened ? 260 : 130; easing.type: aboutWindow.opened ? Easing.OutQuart : Easing.InQuad } }
 
         Rectangle {
             anchors.fill: parent

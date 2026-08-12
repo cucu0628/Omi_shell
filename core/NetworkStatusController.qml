@@ -10,6 +10,8 @@ Item {
     property string device: ""
     property string lanIp: ""
     property var addresses: ({})
+    property bool vpnActive: false
+    property string vpnName: ""
 
     width: 0
     height: 0
@@ -50,12 +52,18 @@ Item {
 
     function updateConnections(output) {
         var best = null
+        var activeVpn = ""
         var lines = (output || "").trim().split("\n")
         for (var i = 0; i < lines.length; i++) {
             if (lines[i] === "") continue
             var fields = splitEscaped(lines[i])
-            if (fields.length < 3 || fields[1] === "") continue
+            if (fields.length < 3) continue
             var type = fields[0]
+            if ((type === "vpn" || type === "wireguard") && activeVpn === "") {
+                activeVpn = fields.slice(2).join(":")
+                continue
+            }
+            if (fields[1] === "") continue
             var normalized = ""
             if (type === "802-3-ethernet" || type === "ethernet") normalized = "ethernet"
             else if (type === "802-11-wireless" || type === "wifi") normalized = "wifi"
@@ -69,6 +77,8 @@ Item {
         connectionType = best ? best.type : "offline"
         connectionName = best ? best.name : ""
         device = best ? best.device : ""
+        vpnActive = activeVpn !== ""
+        vpnName = activeVpn
         updateLanIp()
     }
 
@@ -107,8 +117,21 @@ Item {
         stdout: StdioCollector { onStreamFinished: controller.updateAddresses(this.text || "") }
     }
 
+    Process {
+        id: networkMonitor
+        command: ["nmcli", "monitor"]
+        running: true
+        stdout: SplitParser { onRead: monitorRefresh.restart() }
+    }
+
     Timer {
-        interval: 20000
+        id: monitorRefresh
+        interval: 150
+        onTriggered: controller.refresh()
+    }
+
+    Timer {
+        interval: 300000
         running: true
         repeat: true
         triggeredOnStart: true

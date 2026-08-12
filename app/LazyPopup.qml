@@ -45,6 +45,7 @@ Item {
     Loader {
         id: popupLoader
         active: lazyPopup.loaded
+        asynchronous: true
         sourceComponent: lazyPopup.popupComponent
 
         onLoaded: {

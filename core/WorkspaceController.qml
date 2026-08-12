@@ -14,7 +14,7 @@ Item {
 
     Component.onCompleted: {
         updateFromService()
-        refresh()
+        if (!Hyprland.workspaces || Hyprland.workspaces.values.length === 0) refresh()
     }
 
     function refresh() {
@@ -84,33 +84,15 @@ Item {
         return false
     }
 
-    function scheduleRefresh() {
-        delayedRefresh.restart()
-    }
-
     Process {
         id: fetcher
         stdout: StdioCollector { onStreamFinished: controller.update(this.text || "") }
-    }
-
-    Timer {
-        interval: 30000
-        running: true
-        repeat: true
-        onTriggered: controller.refresh()
-    }
-
-    Timer {
-        id: delayedRefresh
-        interval: 120
-        onTriggered: controller.refresh()
     }
 
     Connections {
         target: Hyprland
         function onFocusedWorkspaceChanged() {
             controller.updateFromService()
-            controller.scheduleRefresh()
         }
     }
 
@@ -118,7 +100,6 @@ Item {
         target: Hyprland.workspaces
         function onValuesChanged() {
             controller.updateFromService()
-            controller.scheduleRefresh()
         }
     }
 }

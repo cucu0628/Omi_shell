@@ -787,7 +787,17 @@ PanelWindow {
         width: Math.min(840, launcherWindow.width - 32)
         height: hasQuery ? Math.min(500, launcherWindow.height - 40, 215 + Math.max(46, resultsColumn.height)) : 154
         opacity: opened ? 1 : 0
-        scale: opened ? 1 : 0.98
+        scale: opened ? 1 : 0.96
+        transform: Translate {
+            y: launcherWindow.opened ? 0 : 12
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: launcherWindow.opened ? 240 : 120
+                    easing.type: launcherWindow.opened ? Easing.OutQuart : Easing.InQuad
+                }
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -1083,16 +1093,16 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 170
-                easing.type: Easing.OutCubic
+                duration: launcherWindow.opened ? 160 : 110
+                easing.type: launcherWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
+                duration: launcherWindow.opened ? 260 : 130
+                easing.type: launcherWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }

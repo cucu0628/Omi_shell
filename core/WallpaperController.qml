@@ -57,7 +57,8 @@ Item {
                 fillMode: Image.PreserveAspectCrop
                 smooth: true
                 asynchronous: true
-                cache: false
+                // Identical monitor sizes can share the decoded wallpaper.
+                cache: true
             }
 
             Rectangle {

@@ -13,6 +13,14 @@ Item {
     height: 0
     visible: false
 
+    function syncProcess() {
+        var shouldRun = available && active
+        if (cavaProcess.running !== shouldRun) cavaProcess.running = shouldRun
+    }
+
+    onActiveChanged: syncProcess()
+    onAvailableChanged: syncProcess()
+
     Process {
         id: availabilityCheck
         command: ["sh", "-c", "command -v cava >/dev/null 2>&1"]
@@ -21,10 +29,9 @@ Item {
 
     Process {
         id: cavaProcess
-        running: controller.available && controller.active
         command: ["sh", "-c", "cat > '" + controller.configPath + "' <<'EOF'\n"
             + "[general]\n"
-            + "framerate=25\n"
+            + "framerate=15\n"
             + "bars=6\n"
             + "autosens=0\n"
             + "sensitivity=30\n"
@@ -56,7 +63,12 @@ Item {
 
                 var nextValues = []
                 for (var i = 0; i < 6; i++) nextValues.push(parseInt(parts[i], 10) || 0)
-                controller.values = nextValues
+                for (var j = 0; j < 6; j++) {
+                    if (nextValues[j] !== controller.values[j]) {
+                        controller.values = nextValues
+                        return
+                    }
+                }
             }
         }
     }

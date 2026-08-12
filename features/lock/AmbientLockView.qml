@@ -133,10 +133,5 @@ Item {
         Keys.onEscapePressed: ambientView.lockRoot.clearPassword()
     }
 
-    Timer {
-        interval: 50
-        running: true
-        repeat: true
-        onTriggered: ambientPasswordInput.forceActiveFocus()
-    }
+    Component.onCompleted: Qt.callLater(ambientPasswordInput.forceActiveFocus)
 }

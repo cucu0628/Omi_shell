@@ -347,15 +347,5 @@ FocusScope {
         }
     }
 
-    // A jelszomezo tartja a fokuszt; ha barmi elvenne, visszaadjuk neki.
-    Timer {
-        interval: 200
-        running: true
-        repeat: true
-        onTriggered: {
-            if (!passwordField.inputActive) passwordField.forceInputFocus()
-        }
-    }
-
-    Component.onCompleted: passwordField.forceInputFocus()
+    Component.onCompleted: Qt.callLater(passwordField.forceInputFocus)
 }

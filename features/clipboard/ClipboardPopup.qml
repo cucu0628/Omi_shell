@@ -140,7 +140,17 @@ PanelWindow {
         width: Math.min(840, clipboardWindow.width - 32)
         height: Math.min(500, clipboardWindow.height - 40)
         opacity: opened ? 1 : 0
-        scale: opened ? 1 : 0.98
+        scale: opened ? 1 : 0.96
+        transform: Translate {
+            y: clipboardWindow.opened ? 0 : 12
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: clipboardWindow.opened ? 240 : 120
+                    easing.type: clipboardWindow.opened ? Easing.OutQuart : Easing.InQuad
+                }
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -310,16 +320,16 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 170
-                easing.type: Easing.OutCubic
+                duration: clipboardWindow.opened ? 160 : 110
+                easing.type: clipboardWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
+                duration: clipboardWindow.opened ? 260 : 130
+                easing.type: clipboardWindow.opened ? Easing.OutQuart : Easing.InQuad
             }
 
         }

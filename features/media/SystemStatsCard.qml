@@ -19,21 +19,40 @@ SharedUi.DashPanel {
         spacing: 10
 
         Repeater {
-            model: [
-                { label: "CPU", value: card.cpuUsage },
-                { label: "RAM", value: card.ramUsage },
-                { label: "DISK", value: card.diskUsage }
-            ]
+            model: 3
 
             Item {
+                id: stat
+
+                readonly property string label: ["CPU", "RAM", "DISK"][index]
+                readonly property real targetValue: [card.cpuUsage, card.ramUsage, card.diskUsage][index]
+                property real displayedValue: 0
+
+                function animateToTarget() {
+                    valueAnimation.stop()
+                    valueAnimation.to = targetValue
+                    valueAnimation.restart()
+                }
+
                 width: (parent.width - 20) / 3
                 height: parent.height
+                onTargetValueChanged: animateToTarget()
+                Component.onCompleted: Qt.callLater(animateToTarget)
+
+                NumberAnimation {
+                    id: valueAnimation
+
+                    target: stat
+                    property: "displayedValue"
+                    duration: 560
+                    easing.type: Easing.OutQuart
+                }
 
                 Text {
                     id: valueText
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: modelData.value + "%"
+                    text: Math.round(stat.displayedValue) + "%"
                     color: card.foreground
                     font.pixelSize: 18
                     font.weight: Font.Light
@@ -43,7 +62,7 @@ SharedUi.DashPanel {
                     id: labelText
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: modelData.label
+                    text: stat.label
                     color: card.muted
                     font.pixelSize: 9
                     font.letterSpacing: 2
@@ -79,9 +98,8 @@ SharedUi.DashPanel {
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
                         anchors.margins: 1
-                        height: Math.max(0, (meterTrack.height - 2) * Math.max(0, Math.min(100, modelData.value)) / 100)
+                        height: Math.max(0, (meterTrack.height - 2) * Math.max(0, Math.min(100, stat.displayedValue)) / 100)
                         color: card.accent
-                        Behavior on height { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
                     }
                 }
             }

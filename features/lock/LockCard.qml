@@ -183,10 +183,5 @@ FocusScope {
         }
     }
 
-    Timer {
-        interval: 50
-        running: true
-        repeat: true
-        onTriggered: passwordField.forceInputFocus()
-    }
+    Component.onCompleted: Qt.callLater(passwordField.forceInputFocus)
 }

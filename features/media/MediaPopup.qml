@@ -297,9 +297,8 @@ PanelWindow {
                 anchors.bottomMargin: 16
                 clip: true
 
-                // Shoji: the pages sit side by side on one track and slide in the
-                // direction of the tab order. No fading -- panels move, they do
-                // not dissolve.
+                // Keep every page rendered so switching tabs never starts with a
+                // blank or freshly-polished frame.
                 Item {
                     id: pageTrack
                     // Animate the index, not x: a width change then repositions the
@@ -315,14 +314,13 @@ PanelWindow {
                     x: -slidePosition * stride
 
                     Behavior on slidePosition {
-                        NumberAnimation { id: pageSlide; duration: 260; easing.type: Easing.InOutCubic }
+                        NumberAnimation { id: pageSlide; duration: 320; easing.type: Easing.OutQuart }
                     }
 
                     Item {
                         x: 0
                         width: pages.width
                         height: pages.height
-                        visible: pageTrack.sliding || mediaPopup.currentTab === 0
                         enabled: mediaPopup.currentTab === 0
 
                         Column {
@@ -376,7 +374,6 @@ PanelWindow {
                         x: pageTrack.stride
                         width: pages.width
                         height: pages.height
-                        visible: pageTrack.sliding || mediaPopup.currentTab === 1
                         enabled: mediaPopup.currentTab === 1
 
                         MediaUi.MediaCard {
@@ -398,7 +395,6 @@ PanelWindow {
                         x: pageTrack.stride * 2
                         width: pages.width
                         height: pages.height
-                        visible: pageTrack.sliding || mediaPopup.currentTab === 2
                         enabled: mediaPopup.currentTab === 2
 
                         WeatherUi.WeatherCard {
