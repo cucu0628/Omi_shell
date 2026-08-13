@@ -3,29 +3,32 @@ import QtQuick
 Item {
     id: root
     required property var theme
-    property bool menuOpened: false
+    property bool popupOpen: false
     signal clicked()
 
     width: 22
     height: parent.height
+
     Text {
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: -2
-        text: "󰐥"
-        color: mouse.containsMouse || root.menuOpened ? root.theme.accent : root.theme.foreground
+        anchors.verticalCenterOffset: -3
+        text: "󰚩"
+        color: mouse.containsMouse || root.popupOpen ? root.theme.accent : root.theme.foreground
         font.family: "Symbols Nerd Font Mono"
         font.pixelSize: 24
         Behavior on color { ColorAnimation { duration: 120 } }
     }
+
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 2
         color: root.theme.accent
-        opacity: mouse.containsMouse || root.menuOpened ? 1 : 0
+        opacity: mouse.containsMouse || root.popupOpen ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
     }
+
     MouseArea {
         id: mouse
         anchors.fill: parent

@@ -12,9 +12,9 @@ command_name=${command_line%% *}
 has "$command_name" || die "command not found: $command_name"
 
 id=$(desktop_safe_id "$name")
-dir="$HOME/.local/share/applications/omi-tui"
+dir="$HOME/.local/share/applications/vellum-tui"
 mkdir -p "$dir"
-desktop="$dir/omi-tui-$id.desktop"
+desktop="$dir/vellum-tui-$id.desktop"
 
 cat > "$desktop" <<EOF
 [Desktop Entry]

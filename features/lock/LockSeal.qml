@@ -1,6 +1,6 @@
 import QtQuick
 
-// Csendes pecsét: álló négyzetkeret, tuskör és a 守 jel.
+// Csendes pecset: allo negyzetkeret, tuskor es lakatjel.
 Item {
     id: seal
 
@@ -8,7 +8,7 @@ Item {
     property real diameter: 96
     property bool busy: false
     property bool alert: false
-    property string glyph: "守"
+    property string glyph: "󰌾"
 
     readonly property color markColor: alert ? lockRoot.alertColor : lockRoot.accent
 
@@ -37,6 +37,8 @@ Item {
     }
 
     Rectangle {
+        id: innerCircle
+
         anchors.centerIn: parent
         width: parent.width * 0.52
         height: width
@@ -50,9 +52,13 @@ Item {
     }
 
     Text {
-        anchors.centerIn: parent
+        anchors.fill: innerCircle
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        topPadding: Math.round(seal.diameter * 0.015)
         text: seal.glyph
         color: seal.markColor
+        font.family: "Symbols Nerd Font Mono"
         font.pixelSize: Math.round(seal.diameter * 0.26)
         font.weight: Font.DemiBold
 

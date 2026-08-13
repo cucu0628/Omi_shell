@@ -13,7 +13,7 @@ has() {
 
 fzf_theme_args() {
   local title=${1:-"Select entries"}
-  local theme_file="$HOME/.config/quickshell/omi_shell/kitty-theme.conf"
+  local theme_file="$HOME/.config/quickshell/vellum_shell/kitty-theme.conf"
   local background="#1e1e2e"
   local foreground="#cdd6f4"
   local surface="#313244"

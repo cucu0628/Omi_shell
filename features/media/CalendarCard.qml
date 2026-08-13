@@ -19,7 +19,7 @@ SharedUi.DashPanel {
     }
 
     title: "CALENDAR"
-    kanji: "暦"
+    kanji: ""
     trailing: card.today.getFullYear() + "." + two(card.today.getMonth() + 1) + "." + two(card.today.getDate())
     contentSpacing: 10
 

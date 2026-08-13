@@ -264,9 +264,10 @@ PanelWindow {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "網"
+                            text: "󰤨"
                             color: panelBg
-                            font.pixelSize: 18
+                            font.family: "Symbols Nerd Font Mono"
+                            font.pixelSize: 20
                             font.weight: Font.DemiBold
                         }
 

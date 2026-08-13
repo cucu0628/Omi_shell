@@ -4,10 +4,10 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=lib.sh
 . "$SCRIPT_DIR/lib.sh"
 
-dir="$HOME/.local/share/applications/omi-webapps"
+dir="$HOME/.local/share/applications/vellum-webapps"
 mkdir -p "$dir"
 require_fzf
-choice=$(find "$dir" -maxdepth 1 -type f -name 'omi-webapp-*.desktop' -printf '%f\n' 2>/dev/null | fzf_one "remove web app" "sed -n '1,80p' '$dir'/{} 2>/dev/null")
+choice=$(find "$dir" -maxdepth 1 -type f -name 'vellum-webapp-*.desktop' -printf '%f\n' 2>/dev/null | fzf_one "remove web app" "sed -n '1,80p' '$dir'/{} 2>/dev/null")
 [[ -n $choice ]] || die "no web app selected"
 rm -f "$dir/$choice"
 update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true

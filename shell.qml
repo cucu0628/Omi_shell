@@ -6,6 +6,7 @@ import Quickshell.Services.Mpris
 import "app" as App
 import "core" as Core
 import "features/about" as AboutFeature
+import "features/ai" as AiFeature
 import "features/appearance" as AppearanceFeature
 import "features/audio" as AudioFeature
 import "features/bar" as BarUi
@@ -19,7 +20,6 @@ import "features/network" as NetworkFeature
 import "features/notifications" as NotificationFeature
 import "features/osd" as OsdFeature
 import "features/polkit" as PolkitFeature
-import "features/power" as PowerFeature
 import "features/screenshot" as ScreenshotFeature
 import "features/tray" as TrayFeature
 import "features/vpn" as VpnFeature
@@ -42,7 +42,7 @@ ShellRoot {
     property var calendarNow: new Date()
     property bool audioOsdReady: false
     readonly property string homeDir: Quickshell.env("HOME")
-    readonly property string shellDir: homeDir + "/.config/quickshell/omi_shell"
+    readonly property string shellDir: homeDir + "/.config/quickshell/vellum_shell"
     readonly property var monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     readonly property var dayNames: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -160,7 +160,6 @@ ShellRoot {
     function setLauncherOpen(open, nextScreen) { popupCoordinator.setLauncherOpen(open, nextScreen) }
     function setClipboardOpen(open, nextScreen) { popupCoordinator.setClipboardOpen(open, nextScreen) }
     function setThemeSwitcherOpen(open, nextMode, nextScreen) { popupCoordinator.setThemeSwitcherOpen(open, nextMode, nextScreen) }
-    function setPowerMenuOpen(open, nextScreen) { popupCoordinator.setPowerMenuOpen(open, nextScreen) }
     function setAudioOpen(open, nextScreen) { popupCoordinator.setAudioOpen(open, nextScreen) }
     function setAboutOpen(open, nextScreen) { popupCoordinator.setAboutOpen(open, nextScreen) }
     function captureScreenshot(mode) {
@@ -211,13 +210,6 @@ ShellRoot {
                 mode: themeSwitcher.mode
                 screen: themeSwitcher.screen
             }
-        }
-    }
-
-    App.LazyPopup {
-        id: powerMenu
-        popupComponent: Component {
-            PowerFeature.PowerMenu { theme: shellRoot.shellTheme }
         }
     }
 
@@ -274,6 +266,16 @@ ShellRoot {
         }
     }
 
+    App.LazyPopup {
+        id: aiPopup
+        popupComponent: Component {
+            AiFeature.AiUsagePopup {
+                theme: shellRoot.shellTheme
+                screen: aiPopup.screen
+            }
+        }
+    }
+
     ScreenshotFeature.ScreenshotController {
         id: screenshotController
         shellDir: shellRoot.shellDir
@@ -304,12 +306,12 @@ ShellRoot {
         launcher: appLauncher
         clipboard: clipboardHistory
         themeSwitcher: themeSwitcher
-        powerMenu: powerMenu
         mediaPopup: mediaPopup
         audioPopup: audioPopup
         networkPopup: networkPopup
         bluetoothPopup: bluetoothPopup
         vpnPopup: vpnPopup
+        aiPopup: aiPopup
         vpnCli: vpnController
         aboutPopup: aboutPopup
         notifications: notifications
@@ -380,7 +382,7 @@ ShellRoot {
             notificationsHasToast: notifications.hasToast
             notificationsUnreadCount: notifications.unreadCount
             notificationsMenuOpened: notifications.menuOpened
-            powerMenuOpened: powerMenu.opened && powerMenu.screen === targetScreen
+            aiPopupOpen: aiPopup.opened && aiPopup.screen === targetScreen
             trayMenuOpen: trayMenu.visible && trayMenu.screen === targetScreen
 
             onMenuToggleRequested: popupCoordinator.toggleMenu(targetScreen)
@@ -390,7 +392,7 @@ ShellRoot {
             onBluetoothToggleRequested: popupCoordinator.toggleBluetooth(targetScreen)
             onVpnToggleRequested: popupCoordinator.toggleVpn(targetScreen)
             onNotificationsToggleRequested: popupCoordinator.toggleNotifications(targetScreen)
-            onPowerToggleRequested: popupCoordinator.togglePowerMenu(targetScreen)
+            onAiToggleRequested: popupCoordinator.toggleAi(targetScreen)
             onLaunchCommand: command => launchBarCommand(command)
             onAudioVolumeStepRequested: increase => audioSummaryController.stepVolume(increase)
             onTrayMenuRequested: (model, globalX) => trayMenu.openFor(targetScreen, model, globalX)

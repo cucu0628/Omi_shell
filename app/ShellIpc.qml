@@ -20,6 +20,13 @@ Item {
         aboutMonitorDelay.restart()
     }
 
+    function openMediaTab(tab) {
+        var screen = focusedScreenProvider()
+        if (screen) coordinator.mediaPopup.screen = screen
+        coordinator.mediaPopup.currentTab = tab
+        coordinator.mediaPopup.opened = true
+    }
+
     Timer {
         id: aboutMonitorDelay
         interval: 75
@@ -80,12 +87,12 @@ Item {
         target: "power"
 
         function toggle(): void {
-            coordinator.togglePowerMenu(coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider())
+            coordinator.toggleMenu(focusedScreenProvider())
         }
         function open(): void {
-            coordinator.setPowerMenuOpen(true, coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider())
+            coordinator.setMenuOpen(true, focusedScreenProvider())
         }
-        function close(): void { coordinator.setPowerMenuOpen(false) }
+        function close(): void { coordinator.setMenuOpen(false) }
     }
 
     IpcHandler {
@@ -108,6 +115,17 @@ Item {
         function toggle(): void { coordinator.toggleAudioScreenAgnostic() }
         function open(): void { coordinator.setAudioOpen(true) }
         function close(): void { coordinator.setAudioOpen(false) }
+    }
+
+    IpcHandler {
+        target: "media"
+
+        function toggle(): void { coordinator.toggleCenterPopup(focusedScreenProvider()) }
+        function open(): void { root.openMediaTab(coordinator.mediaPopup.currentTab) }
+        function overview(): void { root.openMediaTab(0) }
+        function player(): void { root.openMediaTab(1) }
+        function weather(): void { root.openMediaTab(2) }
+        function close(): void { coordinator.mediaPopup.opened = false }
     }
 
     IpcHandler {

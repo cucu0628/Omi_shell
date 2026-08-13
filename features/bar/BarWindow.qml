@@ -33,7 +33,7 @@ PanelWindow {
     property bool notificationsHasToast: false
     property int notificationsUnreadCount: 0
     property bool notificationsMenuOpened: false
-    property bool powerMenuOpened: false
+    property bool aiPopupOpen: false
     property bool trayMenuOpen: false
 
     signal menuToggleRequested()
@@ -43,7 +43,7 @@ PanelWindow {
     signal bluetoothToggleRequested()
     signal vpnToggleRequested()
     signal notificationsToggleRequested()
-    signal powerToggleRequested()
+    signal aiToggleRequested()
     signal launchCommand(var command)
     signal audioVolumeStepRequested(bool increase)
     signal trayMenuRequested(var model, real globalX)
@@ -140,9 +140,15 @@ PanelWindow {
                 onClicked: root.notificationsToggleRequested()
             }
 
+            AiStatusItem {
+                theme: root.theme
+                popupOpen: root.aiPopupOpen
+                onClicked: root.aiToggleRequested()
+            }
+
             BtopStatusItem {
                 theme: root.theme
-                onClicked: root.launchCommand(["sh", "-c", "exec \"$HOME/.config/quickshell/omi_shell/scripts/floating-terminal\" btop"])
+                onClicked: root.launchCommand(["sh", "-c", "exec \"$HOME/.config/quickshell/vellum_shell/scripts/floating-terminal\" btop"])
             }
 
             BatteryStatusItem {
@@ -152,11 +158,6 @@ PanelWindow {
                 charging: root.batteryCharging
             }
 
-            PowerStatusItem {
-                theme: root.theme
-                menuOpened: root.powerMenuOpened
-                onClicked: root.powerToggleRequested()
-            }
         }
     }
 }

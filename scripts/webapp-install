@@ -11,9 +11,9 @@ icon=${3:-$(prompt "Icon name" "web-browser")}
 [[ $url == http://* || $url == https://* ]] || die "URL must start with http:// or https://"
 
 id=$(desktop_safe_id "$name")
-dir="$HOME/.local/share/applications/omi-webapps"
+dir="$HOME/.local/share/applications/vellum-webapps"
 mkdir -p "$dir"
-desktop="$dir/omi-webapp-$id.desktop"
+desktop="$dir/vellum-webapp-$id.desktop"
 
 cat > "$desktop" <<EOF
 [Desktop Entry]

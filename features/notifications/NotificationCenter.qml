@@ -88,9 +88,10 @@ Item {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "知"
+                                text: "󰂚"
                                 color: center.panelBg
-                                font.pixelSize: 18
+                                font.family: "Symbols Nerd Font Mono"
+                                font.pixelSize: 20
                                 font.weight: Font.DemiBold
                             }
 
@@ -110,7 +111,7 @@ Item {
                             }
 
                             Text {
-                                text: "通知センター  /  komorebi notices"
+                                text: "Notification center"
                                 color: center.mutedFg
                                 font.pixelSize: 9
                             }
@@ -202,9 +203,10 @@ Item {
                             spacing: 9
 
                             Text {
-                                text: "静"
+                                text: "󰂜"
                                 color: center.panelAccent
                                 opacity: 0.55
+                                font.family: "Symbols Nerd Font Mono"
                                 font.pixelSize: 17
                             }
 

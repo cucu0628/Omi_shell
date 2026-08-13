@@ -139,8 +139,9 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "権"
+                        text: "󰌾"
                         color: window.panelBg
+                        font.family: "Symbols Nerd Font Mono"
                         font.pixelSize: 22
                         font.weight: Font.DemiBold
                     }
@@ -164,7 +165,7 @@ PanelWindow {
 
                     Text {
                         width: parent.width
-                        text: "権限  /  polkit agent"
+                        text: "Polkit authorization agent"
                         color: window.mutedFg
                         font.pixelSize: 9
                         elide: Text.ElideRight

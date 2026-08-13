@@ -1,0 +1,132 @@
+#!/usr/bin/python3
+"""Print Codex subscription limits as JSON."""
+
+import argparse
+import datetime as dt
+import json
+import os
+import select
+import shutil
+import subprocess
+import tempfile
+import time
+from pathlib import Path
+
+CACHE_SECONDS = 30
+
+
+def cache_path():
+  root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "vellum-shell"
+  root.mkdir(parents=True, exist_ok=True)
+  return root / "ai-usage-codex.json"
+
+
+def read_cache(max_age=None):
+  path = cache_path()
+  try:
+    if max_age is not None and time.time() - path.stat().st_mtime > max_age:
+      return None
+    return json.loads(path.read_text(encoding="utf-8"))
+  except Exception:
+    return None
+
+
+def write_cache(payload):
+  path = cache_path()
+  fd, name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".")
+  try:
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+      json.dump(payload, handle, separators=(",", ":"))
+    Path(name).replace(path)
+  except BaseException:
+    Path(name).unlink(missing_ok=True)
+    raise
+
+
+def runtime_env():
+  env = os.environ.copy()
+  home = str(Path.home())
+  env["PATH"] = os.pathsep.join(filter(None, [env.get("PATH", ""), home + "/.local/bin", home + "/.npm-global/bin", home + "/.local/share/mise/shims"]))
+  return env
+
+
+def rpc(proc, request_id, method, params=None, timeout=8):
+  proc.stdin.write(json.dumps({"id": request_id, "method": method, "params": params or {}}) + "\n")
+  proc.stdin.flush()
+  deadline = time.time() + timeout
+  while time.time() < deadline:
+    ready, _, _ = select.select([proc.stdout], [], [], 0.25)
+    if not ready:
+      continue
+    line = proc.stdout.readline()
+    if not line:
+      break
+    try:
+      message = json.loads(line)
+    except Exception:
+      continue
+    if message.get("id") == request_id:
+      return message
+  raise TimeoutError(method)
+
+
+def limit_window(window):
+  if not isinstance(window, dict) or window.get("usedPercent") is None:
+    return None
+  minutes = int(window.get("windowDurationMins") or 0)
+  if minutes == 10080:
+    label = "Weekly (7-day)"
+  elif minutes and minutes % 60 == 0:
+    label = str(minutes // 60) + "h window"
+  else:
+    label = str(minutes) + "m window" if minutes else "Limit"
+  used = min(1.0, max(0, float(window["usedPercent"]) / 100))
+  reset = int(window.get("resetsAt") or 0)
+  return {"label": label, "used": used, "remaining": 1 - used, "resetsAt": dt.datetime.fromtimestamp(reset, dt.timezone.utc).isoformat() if reset else ""}
+
+
+def fetch():
+  env = runtime_env()
+  codex = shutil.which("codex", path=env["PATH"])
+  if not codex:
+    return {"id": "codex", "name": "Codex", "plan": "", "ready": False, "status": "codex not found in PATH", "limits": []}
+  proc = subprocess.Popen([codex, "-s", "read-only", "-a", "untrusted", "app-server"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, env=env)
+  try:
+    rpc(proc, 1, "initialize", {"clientInfo": {"name": "vellum-shell-ai-usage", "version": "1"}})
+    proc.stdin.write(json.dumps({"method": "initialized", "params": {}}) + "\n")
+    proc.stdin.flush()
+    account = (rpc(proc, 2, "account/read", timeout=4).get("result") or {}).get("account") or {}
+    limits = (rpc(proc, 3, "account/rateLimits/read", timeout=4).get("result") or {}).get("rateLimits") or {}
+    plan = limits.get("planType") or account.get("planType") or account.get("type") or ""
+    windows = [entry for entry in (limit_window(limits.get("primary")), limit_window(limits.get("secondary"))) if entry]
+    return {"id": "codex", "name": "Codex", "plan": str(plan), "ready": bool(windows), "status": "" if windows else "No Codex limits returned", "limits": windows, "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat()}
+  finally:
+    proc.terminate()
+    try:
+      proc.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+      proc.kill()
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--force", action="store_true")
+  args = parser.parse_args()
+  if not args.force:
+    cached = read_cache(CACHE_SECONDS)
+    if cached:
+      print(json.dumps(cached, separators=(",", ":")))
+      return
+  cached = read_cache()
+  try:
+    result = fetch()
+    if result["ready"]:
+      write_cache(result)
+  except Exception:
+    result = cached or {"id": "codex", "name": "Codex", "plan": "", "ready": False, "limits": []}
+    result["status"] = "Codex limits unavailable; run `codex login`"
+  print(json.dumps(result, separators=(",", ":")))
+
+
+if __name__ == "__main__":
+  main()

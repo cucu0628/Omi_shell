@@ -50,6 +50,7 @@ Item {
 
         Text {
             text: picker.kanji
+            visible: picker.kanji !== ""
             color: picker.greeter.accent
             font.pixelSize: 11
             anchors.verticalCenter: parent.verticalCenter

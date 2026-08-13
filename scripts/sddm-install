@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Omi Ink SDDM tema telepitese / frissitese.
+# Vellum Ink SDDM tema telepitese / frissitese.
 #
-#   sddm-install              -> paletta szinkron + masolas /usr/share/sddm/themes/omi-ink ala
+#   sddm-install              -> paletta szinkron + masolas /usr/share/sddm/themes/vellum-ink ala
 #   sddm-install --default    -> ugyanez, plusz beallitja aktiv SDDM temanak
 #   sddm-install --layout     -> ugyanez, plusz X11 monitorelrendezes az SDDM-hez
 #   sddm-install --preview    -> elinditja a greetert teszt modban (nem kell root)
 set -euo pipefail
 
 base="$(cd "$(dirname "$0")/.." && pwd)"
-src="$base/sddm/omi-ink"
-dest="/usr/share/sddm/themes/omi-ink"
+src="$base/sddm/vellum-ink"
+dest="/usr/share/sddm/themes/vellum-ink"
 conf_dir="/etc/sddm.conf.d"
-conf_file="$conf_dir/10-omi-ink.conf"
-layout_conf="$conf_dir/20-omi-ink-layout.conf"
+conf_file="$conf_dir/10-vellum-ink.conf"
+layout_conf="$conf_dir/20-vellum-ink-layout.conf"
 layout_src="$src/Xsetup"
 layout_dest="/etc/sddm/Xsetup"
 
@@ -30,7 +30,7 @@ for arg in "$@"; do
   esac
 done
 
-# A paletta mindig az aktualis omi_shell temabol keszul. Az elrendezes csak a
+# A paletta mindig az aktualis Vellum Shell temabol keszul. Az elrendezes csak a
 # felhasznalokent futo agban generalodik, mert hyprctl kell hozza.
 sh "$base/scripts/sddm-theme" || true
 ((set_layout)) && sh "$base/scripts/sddm-layout" >/dev/null 2>&1 || true
@@ -64,10 +64,10 @@ if ((set_default)); then
   install -d -m 755 "$conf_dir"
   cat > "$conf_file" <<'EOF'
 [Theme]
-Current=omi-ink
+Current=vellum-ink
 EOF
-  chmod 644 "$conf_file"
-  printf 'active theme set in %s\n' "$conf_file"
+    chmod 644 "$conf_file"
+    printf 'active theme set in %s\n' "$conf_file"
 else
   printf 'aktivalas: sudo %s --default\n' "$0"
 fi

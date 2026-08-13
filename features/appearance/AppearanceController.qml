@@ -45,8 +45,8 @@ Item {
         wallpaperItems = []
         themeLoader.generation = loadGeneration
         wallpaperLoader.generation = loadGeneration
-        themeLoader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/omi_shell/scripts/theme-list\""]
-        wallpaperLoader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/omi_shell\"; bgdir=\"$HOME/Pictures/wallpapers\"; current_bg=\"\"; [ -r \"$base/current-wallpaper\" ] && current_bg=$(cat \"$base/current-wallpaper\"); [ -d \"$bgdir\" ] || exit 0; find \"$bgdir\" -maxdepth 1 -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) 2>/dev/null | sort | while IFS= read -r path; do name=$(basename \"$path\"); clean=${name%.*}; clean=${clean#omi-}; title=$(printf '%s\\n' \"$clean\" | tr '_-' ' ' | awk '{for (i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2); print}'); marker=''; [ \"$path\" = \"$current_bg\" ] && marker='current'; printf '%s|%s|%s\\n' \"$title\" \"$path\" \"$marker\"; done"]
+        themeLoader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/vellum_shell/scripts/theme-list\""]
+        wallpaperLoader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/vellum_shell\"; bgdir=\"$HOME/Pictures/wallpapers\"; current_bg=\"\"; [ -r \"$base/current-wallpaper\" ] && current_bg=$(cat \"$base/current-wallpaper\"); [ -d \"$bgdir\" ] || exit 0; find \"$bgdir\" -maxdepth 1 -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) 2>/dev/null | sort | while IFS= read -r path; do name=$(basename \"$path\"); clean=${name%.*}; clean=${clean#vellum-}; title=$(printf '%s\\n' \"$clean\" | tr '_-' ' ' | awk '{for (i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2); print}'); marker=''; [ \"$path\" = \"$current_bg\" ] && marker='current'; printf '%s|%s|%s\\n' \"$title\" \"$path\" \"$marker\"; done"]
         themeLoader.running = true
         wallpaperLoader.running = true
     }
@@ -152,7 +152,7 @@ Item {
         }
         if (wallpaperController) wallpaperController.setCurrentWallpaper(selectedWallpaper.path)
 
-        var command = "base=\"$HOME/.config/quickshell/omi_shell\"; slug=" + shellQuote(selectedTheme.slug)
+        var command = "base=\"$HOME/.config/quickshell/vellum_shell\"; slug=" + shellQuote(selectedTheme.slug)
             + "; path=" + shellQuote(selectedWallpaper.path)
             + "; printf '%s\\n' \"$slug\" > \"$base/current-theme\""
             + "; printf '%s\\n' \"$path\" > \"$base/current-wallpaper\""

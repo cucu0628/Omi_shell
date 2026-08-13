@@ -15,6 +15,7 @@ PanelWindow {
     property alias isLoading: menuController.isLoading
     property string searchQuery: ""
     property string pendingCommand: ""
+    property string confirmCommand: ""
     property var activeSearchInput: null
     property var activeResultsFlick: null
     property var activeCategoryFlick: null
@@ -25,7 +26,7 @@ PanelWindow {
     readonly property string panelAccent: theme ? theme.accent : "#d7472f"
     readonly property string mutedFg: theme && theme.muted ? theme.muted : "#9f8f7c"
     readonly property string inkBg: theme && theme.surface ? theme.surface : "#1b1613"
-    readonly property string shellPath: "~/.config/quickshell/omi_shell/shell.qml"
+    readonly property string shellPath: "~/.config/quickshell/vellum_shell/shell.qml"
     readonly property var quickActions: [{
         "name": "Apps",
         "icon": "󰀻",
@@ -40,7 +41,7 @@ PanelWindow {
         "name": "Appearance",
         "icon": "󰸌",
         "command": "quickshell ipc --path " + shellPath + " call style wallpaper",
-        "path": "Style / Keshiki Studio"
+        "path": "Style / Appearance Studio"
     }, {
         "name": "Network",
         "icon": "",
@@ -54,7 +55,7 @@ PanelWindow {
     }, {
         "name": "Power",
         "icon": "󰐥",
-        "command": "quickshell ipc --path " + shellPath + " call power toggle",
+        "sub": menuDataSource.powerActions,
         "path": "System"
     }]
     readonly property var searchResults: buildSearchResults(searchQuery)
@@ -191,6 +192,8 @@ PanelWindow {
 
     function resetMenu() {
         menuController.cancelDynamic();
+        confirmTimer.stop();
+        confirmCommand = "";
         navigationStack = [];
         activeCategory = "";
         activeSubmenu = [];
@@ -264,6 +267,12 @@ PanelWindow {
 
             fetchKeybindings(item.path || activeCategory);
         } else if (item.command) {
+            if (item.confirm && confirmCommand !== item.command) {
+                confirmCommand = item.command;
+                confirmTimer.restart();
+                return;
+            }
+            confirmCommand = "";
             if (shouldDelayForCapture(item.command)) {
                 pendingCommand = item.command;
                 menuWindow.opened = false;
@@ -356,6 +365,7 @@ PanelWindow {
     }
 
     onSearchQueryChanged: {
+        confirmCommand = "";
         suppressHoverSelection = false;
         selectedIndex = 0;
         if (activeResultsFlick)
@@ -363,12 +373,14 @@ PanelWindow {
 
     }
     onActiveSubmenuChanged: {
+        confirmCommand = "";
         suppressHoverSelection = false;
         selectedIndex = 0;
         if (activeResultsFlick)
             activeResultsFlick.contentY = 0;
 
     }
+    onSelectedIndexChanged: confirmCommand = ""
     onVisibleItemsChanged: {
         selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(visibleItems.length - 1, 0)));
         clampResultsScroll();
@@ -423,6 +435,14 @@ PanelWindow {
         height: Math.min(500, Math.max(350, 220 + Math.min(visibleItems.length, 6) * 46), menuWindow.height - 40)
         opacity: menuWindow.opened ? 1 : 0
         scale: menuWindow.opened ? 1 : 0.96
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 140
+                easing.type: Easing.OutCubic
+            }
+        }
+
         transform: Translate {
             y: menuWindow.opened ? 0 : 12
 
@@ -500,6 +520,13 @@ PanelWindow {
                 execute(command);
             }
         }
+    }
+
+    Timer {
+        id: confirmTimer
+
+        interval: 2200
+        onTriggered: confirmCommand = ""
     }
 
     MenuData {

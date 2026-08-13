@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import Quickshell.Networking
 
 Item {
     id: controller
@@ -117,17 +118,44 @@ Item {
         stdout: StdioCollector { onStreamFinished: controller.updateAddresses(this.text || "") }
     }
 
-    Process {
-        id: networkMonitor
-        command: ["nmcli", "monitor"]
-        running: true
-        stdout: SplitParser { onRead: monitorRefresh.restart() }
-    }
-
     Timer {
         id: monitorRefresh
         interval: 150
         onTriggered: controller.refresh()
+    }
+
+    Connections {
+        target: Networking.devices
+
+        function onValuesChanged() { monitorRefresh.restart() }
+    }
+
+    Instantiator {
+        model: Networking.devices
+
+        delegate: Item {
+            required property var modelData
+
+            width: 0
+            height: 0
+            visible: false
+
+            Connections {
+                target: modelData
+
+                function onConnectedChanged() { monitorRefresh.restart() }
+                function onStateChanged() { monitorRefresh.restart() }
+                function onAddressChanged() { monitorRefresh.restart() }
+                function onNameChanged() { monitorRefresh.restart() }
+            }
+
+            Connections {
+                target: modelData.networks || null
+                ignoreUnknownSignals: true
+
+                function onValuesChanged() { monitorRefresh.restart() }
+            }
+        }
     }
 
     Timer {

@@ -51,7 +51,7 @@ Item {
                 height: parent.height
                 theme: card.theme
                 title: "CONDITIONS"
-                kanji: "天気"
+                kanji: ""
                 trailing: card.location.toUpperCase()
 
                 Text {
@@ -109,7 +109,7 @@ Item {
                 height: parent.height
                 theme: card.theme
                 title: "READINGS"
-                kanji: "計測"
+                kanji: ""
 
                 Grid {
                     anchors.fill: parent
@@ -147,7 +147,7 @@ Item {
                 height: parent.height
                 theme: card.theme
                 title: "SUN CYCLE"
-                kanji: "日"
+                kanji: ""
 
                 Column {
                     anchors.fill: parent
@@ -178,7 +178,7 @@ Item {
                 height: parent.height
                 theme: card.theme
                 title: "FORECAST"
-                kanji: "予報"
+                kanji: ""
                 trailing: card.forecast.length > 0 ? card.forecast.length + " DAYS" : ""
 
                 Row {

@@ -21,6 +21,7 @@ PanelWindow {
     property var monthNames: []
     property var dayNames: []
     property int currentTab: 0
+    property int previousTab: 0
     property var cavaValues: [0, 0, 0, 0, 0, 0]
     property string userName: Quickshell.env("USER") || "user"
     readonly property alias weatherLocation: weatherController.location
@@ -63,9 +64,20 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell.media"
     WlrLayershell.exclusiveZone: -1
 
-    onOpenedChanged: if (opened) {
-        calendarNow = new Date()
-        calendarView = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), 1)
+    onOpenedChanged: {
+        if (opened) {
+            previousTab = currentTab
+            calendarNow = new Date()
+            calendarView = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), 1)
+        }
+    }
+
+    onCurrentTabChanged: {
+        if (!opened) {
+            previousTab = currentTab
+            return
+        }
+        pageUnloadTimer.restart()
     }
 
     function changeCalendarMonth(delta) {
@@ -83,12 +95,12 @@ PanelWindow {
 
     WeatherUi.WeatherController {
         id: weatherController
-        active: mediaPopup.opened
+        active: mediaPopup.opened && mediaPopup.currentTab === 2
     }
 
     MediaUi.SystemStatsController {
         id: statsController
-        active: mediaPopup.opened
+        active: mediaPopup.opened && mediaPopup.currentTab === 0
     }
 
     MediaUi.PlaybackPositionController {
@@ -145,9 +157,10 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "卓"
+                        text: "󰕮"
                         color: panelBg
-                        font.pixelSize: 20
+                        font.family: "Symbols Nerd Font Mono"
+                        font.pixelSize: 22
                         font.weight: Font.DemiBold
                     }
                 }
@@ -170,7 +183,7 @@ PanelWindow {
 
                     Text {
                         width: parent.width
-                        text: "ダッシュボード  /  " + mediaPopup.userName
+                        text: mediaPopup.userName
                         color: mutedFg
                         font.pixelSize: 9
                         elide: Text.ElideRight
@@ -228,9 +241,9 @@ PanelWindow {
 
                 Repeater {
                     model: [
-                        { icon: "󰕮", label: "OVERVIEW", kanji: "全" },
-                        { icon: "󰎆", label: "MEDIA", kanji: "音" },
-                        { icon: "󰖕", label: "WEATHER", kanji: "天" }
+                        { icon: "󰕮", label: "OVERVIEW" },
+                        { icon: "󰎆", label: "MEDIA" },
+                        { icon: "󰖕", label: "WEATHER" }
                     ]
 
                     Rectangle {
@@ -265,13 +278,6 @@ PanelWindow {
                                 font.bold: true
                             }
 
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.kanji
-                                color: tabChip.selected ? panelBg : mutedFg
-                                font.pixelSize: 10
-                                opacity: 0.8
-                            }
                         }
 
                         MouseArea {
@@ -297,8 +303,7 @@ PanelWindow {
                 anchors.bottomMargin: 16
                 clip: true
 
-                // Keep every page rendered so switching tabs never starts with a
-                // blank or freshly-polished frame.
+                // Keep the outgoing page until the slide finishes, then unload it.
                 Item {
                     id: pageTrack
                     // Animate the index, not x: a width change then repositions the
@@ -317,13 +322,14 @@ PanelWindow {
                         NumberAnimation { id: pageSlide; duration: 320; easing.type: Easing.OutQuart }
                     }
 
-                    Item {
+                    Loader {
                         x: 0
                         width: pages.width
                         height: pages.height
                         enabled: mediaPopup.currentTab === 0
+                        active: mediaPopup.currentTab === 0 || mediaPopup.previousTab === 0
 
-                        Column {
+                        sourceComponent: Column {
                             anchors.fill: parent
                             spacing: 12
 
@@ -370,13 +376,14 @@ PanelWindow {
                         }
                     }
 
-                    Item {
+                    Loader {
                         x: pageTrack.stride
                         width: pages.width
                         height: pages.height
                         enabled: mediaPopup.currentTab === 1
+                        active: mediaPopup.currentTab === 1 || mediaPopup.previousTab === 1
 
-                        MediaUi.MediaCard {
+                        sourceComponent: MediaUi.MediaCard {
                             anchors.fill: parent
                             theme: mediaPopup.theme
                             player: mediaPopup.effectivePlayer
@@ -391,13 +398,14 @@ PanelWindow {
                         }
                     }
 
-                    Item {
+                    Loader {
                         x: pageTrack.stride * 2
                         width: pages.width
                         height: pages.height
                         enabled: mediaPopup.currentTab === 2
+                        active: mediaPopup.currentTab === 2 || mediaPopup.previousTab === 2
 
-                        WeatherUi.WeatherCard {
+                        sourceComponent: WeatherUi.WeatherCard {
                             anchors.fill: parent
                             theme: mediaPopup.theme
                             now: mediaPopup.calendarNow
@@ -416,6 +424,12 @@ PanelWindow {
                     }
                 }
             }
+        }
+
+        Timer {
+            id: pageUnloadTimer
+            interval: 360
+            onTriggered: mediaPopup.previousTab = mediaPopup.currentTab
         }
 
         Timer {

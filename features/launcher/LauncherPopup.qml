@@ -33,6 +33,7 @@ PanelWindow {
     readonly property string modeTitle: calcMode ? "CALCULATOR" : (projectMode ? "PROJECTS" : (webMode ? "WEB SEARCH" : (emojiMode ? "EMOJI" : "APPLICATIONS")))
     readonly property var appResults: buildAppResults(query)
     readonly property var visibleItems: calcMode ? calcItems() : (projectMode ? projectItems() : (webMode ? webItems() : (emojiMode ? emojiItems() : appResults)))
+    readonly property real resultsHeight: visibleItems.length > 0 ? visibleItems.length * 50 - 4 : 46
     readonly property var aliases: [{
         "name": "browser",
         "terms": ["web", "internet"],
@@ -54,7 +55,7 @@ PanelWindow {
     }, {
         "name": "settings",
         "terms": ["control", "preferences", "menu"],
-        "command": "quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call menu toggle",
+        "command": "quickshell ipc --path ~/.config/quickshell/vellum_shell/shell.qml call menu toggle",
         "icon": "",
         "subtitle": "Open shell menu"
     }]
@@ -296,7 +297,7 @@ PanelWindow {
         searchField.text = "";
         selectedIndex = 0;
         calcResult = "";
-        resultsFlick.contentY = 0;
+        resultsList.contentY = 0;
         calcTimer.stop();
     }
 
@@ -643,19 +644,13 @@ PanelWindow {
     }
 
     function ensureSelectedVisible() {
-        var itemHeight = 50;
-        var top = selectedIndex * itemHeight;
-        var bottom = top + itemHeight;
-        var maxY = Math.max(0, resultsFlick.contentHeight - resultsFlick.height);
-        if (top < resultsFlick.contentY)
-            resultsFlick.contentY = Math.max(0, Math.min(top, maxY));
-        else if (bottom > resultsFlick.contentY + resultsFlick.height)
-            resultsFlick.contentY = Math.max(0, Math.min(bottom - resultsFlick.height, maxY));
+        if (visibleItems.length > 0)
+            resultsList.positionViewAtIndex(selectedIndex, ListView.Contain);
     }
 
     function clampResultsScroll() {
-        var maxY = Math.max(0, resultsFlick.contentHeight - resultsFlick.height);
-        resultsFlick.contentY = Math.max(0, Math.min(resultsFlick.contentY, maxY));
+        var maxY = Math.max(0, resultsList.contentHeight - resultsList.height);
+        resultsList.contentY = Math.max(0, Math.min(resultsList.contentY, maxY));
     }
 
     function handleKey(event) {
@@ -697,7 +692,7 @@ PanelWindow {
     onQueryChanged: {
         suppressHoverSelection = false;
         selectedIndex = 0;
-        resultsFlick.contentY = 0;
+        resultsList.contentY = 0;
         if (calcMode && calcExpression !== "") {
             calcTimer.restart();
         } else {
@@ -785,7 +780,7 @@ PanelWindow {
         anchors.centerIn: parent
         enabled: opened
         width: Math.min(840, launcherWindow.width - 32)
-        height: hasQuery ? Math.min(500, launcherWindow.height - 40, 215 + Math.max(46, resultsColumn.height)) : 154
+        height: hasQuery ? Math.min(500, launcherWindow.height - 40, 215 + Math.max(46, resultsHeight)) : 154
         opacity: opened ? 1 : 0
         scale: opened ? 1 : 0.96
         transform: Translate {
@@ -834,9 +829,10 @@ PanelWindow {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "木"
+                            text: "󰀻"
                             color: panelBg
-                            font.pixelSize: 16
+                            font.family: "Symbols Nerd Font Mono"
+                            font.pixelSize: 18
                             font.weight: Font.DemiBold
                         }
 
@@ -847,7 +843,7 @@ PanelWindow {
                         spacing: 1
 
                         Text {
-                            text: "KOMOREBI"
+                            text: "VELLUM SHELL"
                             color: panelFg
                             font.pixelSize: 12
                             font.bold: true
@@ -855,7 +851,7 @@ PanelWindow {
                         }
 
                         Text {
-                            text: "アプリランチャー  /  app launcher"
+                            text: "Application launcher"
                             color: mutedFg
                             font.pixelSize: 9
                         }
@@ -1000,27 +996,21 @@ PanelWindow {
                         font.pixelSize: 10
                     }
 
-                    Flickable {
-                        id: resultsFlick
+                    ListView {
+                        id: resultsList
 
                         anchors.fill: parent
-                        contentHeight: resultsColumn.height
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
                         visible: visibleItems.length > 0
                         interactive: contentHeight > height
+                        model: launcherWindow.opened ? visibleItems : []
+                        spacing: 4
+                        reuseItems: true
+                        cacheBuffer: 92
 
-                        Column {
-                            id: resultsColumn
-
-                            width: parent.width
-                            spacing: 4
-
-                            Repeater {
-                                model: visibleItems
-
-                                LauncherUi.LauncherResultRow {
-                                    width: resultsColumn.width
+                        delegate: LauncherUi.LauncherResultRow {
+                                    width: ListView.view.width
                                     result: modelData
                                     resultIndex: index
                                     selected: index === selectedIndex
@@ -1042,10 +1032,6 @@ PanelWindow {
                                         selectedIndex = rowIndex;
                                         activateSelected();
                                     }
-                                }
-
-                            }
-
                         }
 
                     }
@@ -1056,16 +1042,16 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         width: 2
                         color: mutedFg
-                        opacity: resultsFlick.visible && resultsFlick.interactive ? 0.18 : 0
+                        opacity: resultsList.visible && resultsList.interactive ? 0.18 : 0
                     }
 
                     Rectangle {
                         anchors.right: parent.right
                         width: 2
-                        height: resultsFlick.visible && resultsFlick.contentHeight > 0 ? Math.max(24, parent.height * resultsFlick.visibleArea.heightRatio) : 0
-                        y: resultsFlick.visible ? resultsFlick.visibleArea.yPosition * parent.height : 0
+                        height: resultsList.visible && resultsList.contentHeight > 0 ? Math.max(24, parent.height * resultsList.visibleArea.heightRatio) : 0
+                        y: resultsList.visible ? resultsList.visibleArea.yPosition * parent.height : 0
                         color: panelAccent
-                        opacity: resultsFlick.visible && resultsFlick.interactive ? 0.9 : 0
+                        opacity: resultsList.visible && resultsList.interactive ? 0.9 : 0
 
                         Behavior on y {
                             NumberAnimation {

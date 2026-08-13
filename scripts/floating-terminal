@@ -32,7 +32,7 @@ if ! command -v kitty >/dev/null 2>&1; then
   exit 1
 fi
 
-terminal_exec="kitty --class omi-floating-terminal -e bash -lc $(printf '%q' "$shell_cmd")"
+terminal_exec="kitty --class vellum-shell-floating-terminal -e bash -lc $(printf '%q' "$shell_cmd")"
 
 if command -v hyprctl >/dev/null 2>&1; then
   hyprctl dispatch "hl.dsp.exec_cmd($(lua_quote "$terminal_exec"), { float = true, size = { 1020, 650 }, center = true })" >/dev/null

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base="$HOME/.config/quickshell/omi_shell"
+base="$HOME/.config/quickshell/vellum_shell"
 fastfetch_dir="$HOME/.config/fastfetch"
 source_file=${1:-}
 
@@ -13,7 +13,7 @@ fi
 
 [[ -r $source_file ]] || exit 0
 [[ -r "$fastfetch_dir/config.template.jsonc" ]] || exit 0
-[[ -r "$fastfetch_dir/omi.template.svg" ]] || exit 0
+[[ -r "$fastfetch_dir/vellum.template.svg" ]] || exit 0
 
 background="#1e1e2e"
 foreground="#cdd6f4"
@@ -61,14 +61,14 @@ update_text_file() {
 }
 
 update_text_file "$fastfetch_dir/config.template.jsonc" "$fastfetch_dir/config.jsonc"
-update_text_file "$fastfetch_dir/omi.template.svg" "$fastfetch_dir/omi.svg"
+update_text_file "$fastfetch_dir/vellum.template.svg" "$fastfetch_dir/vellum.svg"
 
 if command -v magick >/dev/null 2>&1; then
-  tmp_png=$(mktemp "$fastfetch_dir/.omi.XXXXXX.png")
+  tmp_png=$(mktemp "$fastfetch_dir/.vellum.XXXXXX.png")
   trap 'rm -f "$tmp_png"' EXIT
-  magick -background none "$fastfetch_dir/omi.svg" -trim +repage \
+  magick -background none "$fastfetch_dir/vellum.svg" -trim +repage \
     -resize 768x768 -strip "$tmp_png"
-  if [[ ! -r "$fastfetch_dir/omi.png" ]] || ! cmp -s "$tmp_png" "$fastfetch_dir/omi.png"; then
-    mv "$tmp_png" "$fastfetch_dir/omi.png"
+  if [[ ! -r "$fastfetch_dir/vellum.png" ]] || ! cmp -s "$tmp_png" "$fastfetch_dir/vellum.png"; then
+    mv "$tmp_png" "$fastfetch_dir/vellum.png"
   fi
 fi

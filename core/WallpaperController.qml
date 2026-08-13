@@ -17,7 +17,7 @@ Item {
     visible: false
 
     function load() {
-        loader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/omi_shell\"; bgdir=\"$HOME/Pictures/wallpapers\"; path=\"\"; [ -r \"$base/current-wallpaper\" ] && path=$(cat \"$base/current-wallpaper\"); [ -r \"$path\" ] || path=$(find \"$bgdir\" -maxdepth 1 -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) 2>/dev/null | sort | head -n 1); [ -r \"$path\" ] || path=\"\"; printf '%s' \"$path\""]
+        loader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/vellum_shell\"; bgdir=\"$HOME/Pictures/wallpapers\"; path=\"\"; [ -r \"$base/current-wallpaper\" ] && path=$(cat \"$base/current-wallpaper\"); [ -r \"$path\" ] || path=$(find \"$bgdir\" -maxdepth 1 -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \\) 2>/dev/null | sort | head -n 1); [ -r \"$path\" ] || path=\"\"; printf '%s' \"$path\""]
         loader.running = true
     }
 

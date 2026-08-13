@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-base="$HOME/.config/quickshell/omi_shell"
+base="$HOME/.config/quickshell/vellum_shell"
 theme_name=""
 background=""
 [[ -r "$base/current-theme" ]] && theme_name=$(<"$base/current-theme")

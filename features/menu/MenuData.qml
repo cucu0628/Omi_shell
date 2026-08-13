@@ -2,8 +2,8 @@ import QtQuick
 import Quickshell
 
 QtObject {
-    readonly property string shellPath: "~/.config/quickshell/omi_shell/shell.qml"
-    readonly property string scriptsPath: "~/.config/quickshell/omi_shell/scripts"
+    readonly property string shellPath: "~/.config/quickshell/vellum_shell/shell.qml"
+    readonly property string scriptsPath: "~/.config/quickshell/vellum_shell/scripts"
     readonly property var lockscreenMonitorItems: Quickshell.screens.length > 1 ? [
         { name: "Lockscreen Input Monitor", icon: "󰍹", dynamic: {
             cmd: scriptsPath + "/lockscreen-monitor list",
@@ -11,6 +11,12 @@ QtObject {
             prefix: scriptsPath + "/lockscreen-monitor set"
         }}
     ] : []
+    readonly property var powerActions: [
+        { name: "Suspend", icon: "󰒲", command: "systemctl suspend", confirm: true },
+        { name: "Logout", icon: "󰍃", command: "hyprctl dispatch 'hl.dsp.exit()'", confirm: true },
+        { name: "Reboot", icon: "󰜉", command: "systemctl reboot", confirm: true },
+        { name: "Shutdown", icon: "󰐥", command: "systemctl poweroff", confirm: true }
+    ]
 
     readonly property var items: [
         { name: "Apps", icon: "󰀻", command: "quickshell ipc --path " + shellPath + " call launcher toggle" },
@@ -18,7 +24,7 @@ QtObject {
         { name: "Audio", icon: "", command: "quickshell ipc --path " + shellPath + " call audio toggle" },
         { name: "Notifications", icon: "󰂞", command: "quickshell ipc --path " + shellPath + " call notifications toggle" },
         { name: "Style", icon: "", sub: [
-            { name: "Keshiki Studio", icon: "󰸌", command: "quickshell ipc --path " + shellPath + " call style wallpaper" },
+            { name: "Appearance Studio", icon: "󰸌", command: "quickshell ipc --path " + shellPath + " call style wallpaper" },
             { name: "Open on Palette", icon: "", command: "quickshell ipc --path " + shellPath + " call style theme" },
             { name: "Current Theme", icon: "󰸌", command: scriptsPath + "/floating-terminal " + scriptsPath + "/theme-current" },
             { name: "Refresh Shell", icon: "", command: scriptsPath + "/theme-refresh" }
@@ -49,7 +55,7 @@ QtObject {
         { name: "Keybindings", icon: "", keybindings: true },
         { name: "System", icon: "", sub: lockscreenMonitorItems.concat([
             { name: "Lock", icon: "", command: "quickshell ipc --path " + shellPath + " call lock lock" },
-            { name: "Power Menu", icon: "󰐥", command: "quickshell ipc --path " + shellPath + " call power toggle" },
+            { name: "Power", icon: "󰐥", sub: powerActions },
             { name: "About", icon: "", command: "quickshell ipc --path " + shellPath + " call about toggle" }
         ])}
     ]

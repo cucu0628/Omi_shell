@@ -1,6 +1,6 @@
 import QtQuick
 
-// Csendes pecset: allo negyzetkeret, tuskor es a 守 jel.
+// Csendes pecset: allo negyzetkeret, tuskor es lakatjel.
 Item {
     id: seal
 
@@ -8,7 +8,7 @@ Item {
     property real diameter: 96
     property bool busy: false
     property bool alert: false
-    property string glyph: "守"
+    property string glyph: "LOCK"
 
     readonly property color markColor: alert ? greeter.alertColor : greeter.accent
 
@@ -53,7 +53,8 @@ Item {
         anchors.centerIn: parent
         text: seal.glyph
         color: seal.markColor
-        font.pixelSize: Math.round(seal.diameter * 0.26)
+        font.pixelSize: Math.round(seal.diameter * 0.13)
+        font.letterSpacing: 2
         font.weight: Font.DemiBold
 
         Behavior on color { ColorAnimation { duration: 160 } }

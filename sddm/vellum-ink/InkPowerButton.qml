@@ -1,6 +1,6 @@
 import QtQuick
 
-// Egyszeru szoveges gomb: kanji jel + latin felirat, ikonfont nelkul.
+// Egyszeru szoveges gomb opcionalis jelolessel.
 Item {
     id: button
 
@@ -13,7 +13,7 @@ Item {
 
     readonly property color markColor: danger ? greeter.alertColor : greeter.accent
 
-    implicitWidth: Math.max(kanjiText.implicitWidth, labelText.implicitWidth) + 22
+    implicitWidth: Math.max(kanjiText.visible ? kanjiText.implicitWidth : 0, labelText.implicitWidth) + 22
     implicitHeight: 34
     opacity: enabled ? 1 : 0.35
 
@@ -44,6 +44,7 @@ Item {
 
             anchors.horizontalCenter: parent.horizontalCenter
             text: button.kanji
+            visible: button.kanji !== ""
             color: mouse.containsMouse ? button.markColor : button.greeter.foreground
             font.pixelSize: 12
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base="$HOME/.config/quickshell/omi_shell"
+base="$HOME/.config/quickshell/vellum_shell"
 file="$base/current-weather-location"
 current="Budapest"
 

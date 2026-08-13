@@ -184,7 +184,7 @@ Item {
         currentDynamicPath = path || activeCategory
         currentDynamicType = "keybindings"
         dynamicTimeout.restart()
-        dynamicFetcher.command = ["sh", "-c", "exec \"$HOME/.config/quickshell/omi_shell/scripts/keybindings-list\""]
+        dynamicFetcher.command = ["sh", "-c", "exec \"$HOME/.config/quickshell/vellum_shell/scripts/keybindings-list\""]
         dynamicFetcher.running = true
     }
 }

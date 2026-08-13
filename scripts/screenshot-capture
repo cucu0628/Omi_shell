@@ -18,8 +18,8 @@ fi
 
 background="191724"
 accent="ebbcba"
-theme_name=$(cat "$HOME/.config/quickshell/omi_shell/current-theme" 2>/dev/null || true)
-theme_file="$HOME/.config/quickshell/omi_shell/themes/$theme_name/theme.conf"
+theme_name=$(cat "$HOME/.config/quickshell/vellum_shell/current-theme" 2>/dev/null || true)
+theme_file="$HOME/.config/quickshell/vellum_shell/themes/$theme_name/theme.conf"
 if [ -r "$theme_file" ]; then
     while IFS='=' read -r key value; do
         value=${value#\#}
@@ -160,7 +160,7 @@ if command -v wl-copy >/dev/null 2>&1; then
 fi
 
 (
-    action=$(notify-send -a "Omi Shell" -i "$output" -A "default=Edit with Satty" "Screenshot captured" "Saved to $output and copied to the clipboard." || true)
+    action=$(notify-send -a "Vellum Shell" -i "$output" -A "default=Edit with Satty" "Screenshot captured" "Saved to $output and copied to the clipboard." || true)
     if [ "$action" = "default" ] && command -v satty >/dev/null 2>&1; then
         satty --filename "$output" --output-filename "$output" >/dev/null 2>&1 &
     fi

@@ -18,7 +18,7 @@ SharedUi.DashPanel {
     signal wallpaperSelected(int index)
 
     title: "WALLPAPER FILM"
-    kanji: "壁紙"
+    kanji: ""
     trailing: filmstrip.activeSection === "wallpaper"
         ? wallpaperItems.length + " FRAMES  ·  ← →"
         : wallpaperItems.length + " FRAMES  ·  TAB"
@@ -80,7 +80,7 @@ SharedUi.DashPanel {
                 anchors.fill: parent
                 anchors.margins: 1
                 source: filmstrip.imagesEnabled ? filmstrip.imageSource(modelData.path) : ""
-                sourceSize: Qt.size(256, 256)
+                sourceSize: Qt.size(160, 112)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 smooth: true

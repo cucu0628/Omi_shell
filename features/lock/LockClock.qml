@@ -34,25 +34,13 @@ Column {
         }
     }
 
-    Row {
-        spacing: 10
+    Text {
+        text: clock.lockRoot.weekdayText
+        color: clock.lockRoot.foreground
+        font.pixelSize: 12
+        font.letterSpacing: 5
+        font.bold: true
         anchors.horizontalCenter: clock.centered ? parent.horizontalCenter : undefined
-
-        Text {
-            text: clock.lockRoot.weekdayText
-            color: clock.lockRoot.foreground
-            font.pixelSize: 12
-            font.letterSpacing: 5
-            font.bold: true
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Text {
-            text: clock.lockRoot.weekdayKanji
-            color: clock.lockRoot.accent
-            font.pixelSize: 11
-            anchors.verticalCenter: parent.verticalCenter
-        }
     }
 
     Text {

@@ -28,7 +28,7 @@ QtObject {
     }
 
     function loadThemeColors() {
-        themeLoader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/omi_shell/scripts/theme-read\""]
+        themeLoader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/vellum_shell/scripts/theme-read\""]
         themeLoader.running = true
     }
 

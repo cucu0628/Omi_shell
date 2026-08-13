@@ -251,7 +251,7 @@ FocusScope {
 
                 greeter: card.greeter
                 pickerId: "user"
-                kanji: "利用者"
+                kanji: ""
                 label: "USER"
                 entries: card.greeter.users
                 currentIndex: card.greeter.userIndex
@@ -263,7 +263,7 @@ FocusScope {
 
                 greeter: card.greeter
                 pickerId: "session"
-                kanji: "環境"
+                kanji: ""
                 label: "SESSION"
                 entries: card.greeter.sessions
                 currentIndex: card.greeter.sessionIndex
@@ -300,7 +300,7 @@ FocusScope {
 
             Ink.InkPowerButton {
                 greeter: card.greeter
-                kanji: "休止"
+                kanji: ""
                 label: "SLEEP"
                 enabled: sddm.canSuspend
                 anchors.verticalCenter: parent.verticalCenter
@@ -309,7 +309,7 @@ FocusScope {
 
             Ink.InkPowerButton {
                 greeter: card.greeter
-                kanji: "再起動"
+                kanji: ""
                 label: "RESTART"
                 enabled: sddm.canReboot
                 anchors.verticalCenter: parent.verticalCenter
@@ -318,7 +318,7 @@ FocusScope {
 
             Ink.InkPowerButton {
                 greeter: card.greeter
-                kanji: "電源"
+                kanji: ""
                 label: "SHUTDOWN"
                 danger: true
                 enabled: sddm.canPowerOff

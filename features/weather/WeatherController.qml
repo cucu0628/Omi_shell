@@ -161,7 +161,7 @@ Item {
     }
 
     function loadLocation() {
-        locationLoader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/omi_shell\"; if [ -n \"${WEATHER_LOCATION:-}\" ]; then printf '%s' \"$WEATHER_LOCATION\"; elif [ -r \"$base/current-weather-location\" ]; then sed -n '1p' \"$base/current-weather-location\"; else printf 'Budapest'; fi"]
+        locationLoader.command = ["sh", "-c", "base=\"$HOME/.config/quickshell/vellum_shell\"; if [ -n \"${WEATHER_LOCATION:-}\" ]; then printf '%s' \"$WEATHER_LOCATION\"; elif [ -r \"$base/current-weather-location\" ]; then sed -n '1p' \"$base/current-weather-location\"; else printf 'Budapest'; fi"]
         locationLoader.running = true
     }
 

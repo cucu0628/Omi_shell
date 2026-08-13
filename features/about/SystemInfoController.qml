@@ -13,7 +13,7 @@ QtObject {
     property string quickshellVersion: ""
     property string moduleSummary: ""
     property string wallpaperName: ""
-    property string configPath: "~/.config/quickshell/omi_shell"
+    property string configPath: "~/.config/quickshell/vellum_shell"
 
     function parseInfo(output) {
         var lines = (output || "").split("\n")
@@ -47,7 +47,7 @@ QtObject {
 
     function refreshInfo() {
         var cmd = [
-            "dir=\"$HOME/.config/quickshell/omi_shell\"",
+            "dir=\"$HOME/.config/quickshell/vellum_shell\"",
             "theme=$(cat \"$dir/current-theme\" 2>/dev/null)",
             "[ -n \"$theme\" ] && printf 'meta\\t󰸌\\tTheme\\t%s\\n' \"$theme\"",
             "printf 'meta\\t󰀄\\tUser\\t%s@%s\\n' \"$USER\" \"$(hostname 2>/dev/null)\"",

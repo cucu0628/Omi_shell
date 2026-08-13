@@ -1,6 +1,6 @@
-# Omi Shell
+# Vellum Shell
 
-Omi Shell is a Japanese ink-inspired desktop shell for
+Vellum Shell is an ink-inspired desktop shell for
 [Quickshell](https://quickshell.outfoxxed.me/) and Hyprland. It provides a
 multi-monitor top bar, application launcher, notification center, media
 dashboard, system controls, appearance management, and a separate Wayland
@@ -12,7 +12,7 @@ Kitty, and a custom Hyprland Lua setup.
 
 ## Preview
 
-![Omi Shell desktop preview](assets/Overview.png)
+![Vellum Shell desktop preview](assets/Overview.png)
 
 ## Features
 
@@ -27,7 +27,7 @@ Kitty, and a custom Hyprland Lua setup.
 - Notification server with toasts, history, actions, unread state, and DND.
 - Media dashboard with playback, weather, calendar, and system statistics.
 - PipeWire audio mixer, NetworkManager controls, volume OSD, and Polkit agent.
-- Keshiki Studio for matching shell themes and wallpapers, including optional
+- Appearance Studio for matching shell themes and wallpapers, including optional
   Matugen-generated palettes.
 - Screenshot modes for smart selection, windows, workspaces, and regions.
 - Multi-monitor Wayland lock screen with PAM authentication.
@@ -62,6 +62,7 @@ require the corresponding command:
 | Audio control panel | `pavucontrol` |
 | Audio visualization | `cava` (optional) |
 | Battery status | UPower daemon (optional) |
+| AI usage panel | `codex` and/or `claude` CLI with an active subscription login |
 | Weather | `curl` and internet access to Open-Meteo |
 | Screenshot capture | `grim`, `slurp`, `wayfreeze`, `magick`, `hyprctl`, `jq` |
 | Screenshot extras | `satty`, `wl-copy`, `notify-send`, `xdg-user-dir` |
@@ -80,7 +81,7 @@ Clone the repository to the path expected by the shell:
 
 ```bash
 git clone https://git.asked.hu/asked/qs.git \
-  "$HOME/.config/quickshell/omi_shell"
+  "$HOME/.config/quickshell/vellum_shell"
 ```
 
 Install every package used by the shell and its bundled integrations on Arch
@@ -88,40 +89,40 @@ Linux or CachyOS. The script skips packages that are already installed and uses
 `paru` or `yay` for the two AUR dependencies:
 
 ```bash
-cd "$HOME/.config/quickshell/omi_shell"
+cd "$HOME/.config/quickshell/vellum_shell"
 ./install.sh
 ```
 
 Make sure the helper scripts are executable:
 
 ```bash
-chmod +x "$HOME/.config/quickshell/omi_shell/scripts/"*
+chmod +x "$HOME/.config/quickshell/vellum_shell/scripts/"*
 ```
 
 Set an existing wallpaper path before the first launch:
 
 ```bash
 printf '%s\n' "$HOME/Pictures/wallpapers/your-wallpaper.png" \
-  > "$HOME/.config/quickshell/omi_shell/current-wallpaper"
+  > "$HOME/.config/quickshell/vellum_shell/current-wallpaper"
 ```
 
 Start the shell:
 
 ```bash
-quickshell --path "$HOME/.config/quickshell/omi_shell/shell.qml" --daemonize
+quickshell --path "$HOME/.config/quickshell/vellum_shell/shell.qml" --daemonize
 ```
 
 For Hyprland autostart, add the same command to your session configuration, for
 example:
 
 ```ini
-exec-once = quickshell --path ~/.config/quickshell/omi_shell/shell.qml --daemonize
+exec-once = quickshell --path ~/.config/quickshell/vellum_shell/shell.qml --daemonize
 ```
 
 Restart an already running instance with:
 
 ```bash
-~/.config/quickshell/omi_shell/scripts/theme-refresh
+~/.config/quickshell/vellum_shell/scripts/theme-refresh
 ```
 
 The package installer does not enable system services or configure session
@@ -137,7 +138,7 @@ bind shell actions in Hyprland.
 The general command format is:
 
 ```bash
-quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call TARGET METHOD
+quickshell ipc --path ~/.config/quickshell/vellum_shell/shell.qml call TARGET METHOD
 ```
 
 ### IPC reference
@@ -158,14 +159,14 @@ quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call TARGET METHO
 Example Hyprland bindings:
 
 ```ini
-$omi = quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call
+$vellum = quickshell ipc --path ~/.config/quickshell/vellum_shell/shell.qml call
 
-bind = SUPER, SPACE, exec, $omi launcher toggle
-bind = SUPER, V, exec, $omi clipboard toggle
-bind = SUPER, N, exec, $omi notifications toggle
-bind = SUPER, P, exec, $omi menu toggle
-bind = , PRINT, exec, $omi screenshot capture
-bind = SHIFT, PRINT, exec, $omi screenshot region
+bind = SUPER, SPACE, exec, $vellum launcher toggle
+bind = SUPER, V, exec, $vellum clipboard toggle
+bind = SUPER, N, exec, $vellum notifications toggle
+bind = SUPER, P, exec, $vellum menu toggle
+bind = , PRINT, exec, $vellum screenshot capture
+bind = SHIFT, PRINT, exec, $vellum screenshot region
 ```
 
 ### Lock screen
@@ -173,7 +174,7 @@ bind = SHIFT, PRINT, exec, $omi screenshot region
 The lock screen is hosted by the main shell and activated over IPC:
 
 ```bash
-quickshell ipc --path ~/.config/quickshell/omi_shell/shell.qml call lock lock
+quickshell ipc --path ~/.config/quickshell/vellum_shell/shell.qml call lock lock
 ```
 
 It creates a secure `WlSessionLock` surface on every monitor. One monitor shows
@@ -181,8 +182,8 @@ the password input and the others use an ambient view. Select the input monitor
 through the shell menu or directly:
 
 ```bash
-~/.config/quickshell/omi_shell/scripts/lockscreen-monitor list
-~/.config/quickshell/omi_shell/scripts/lockscreen-monitor set HDMI-A-1
+~/.config/quickshell/vellum_shell/scripts/lockscreen-monitor list
+~/.config/quickshell/vellum_shell/scripts/lockscreen-monitor set HDMI-A-1
 ```
 
 Authentication uses the PAM service named `hyprlock`. A working
@@ -191,20 +192,20 @@ lock screen.
 
 ### Login screen (SDDM)
 
-`sddm/omi-ink/` is an SDDM greeter theme that reuses the lock-screen visual
+`sddm/vellum-ink/` is an SDDM greeter theme that reuses the lock-screen visual
 language: the same ensō background, shoji shutter, seal, panel, and palette.
 It adds the greeter-only controls: user picker, session picker, keyboard
 layout, and the power actions.
 
 ```bash
-~/.config/quickshell/omi_shell/scripts/sddm-install --preview            # test run, no root
-sudo ~/.config/quickshell/omi_shell/scripts/sddm-install --default --layout
+~/.config/quickshell/vellum_shell/scripts/sddm-install --preview            # test run, no root
+sudo ~/.config/quickshell/vellum_shell/scripts/sddm-install --default --layout
 ```
 
 `scripts/sddm-theme` regenerates `theme.conf` from the active shell palette and
 runs as part of the theme switch, so the greeter follows the selected theme
 automatically. It writes both the repository copy and the installed one at
-`/usr/share/sddm/themes/omi-ink/theme.conf`, which `sddm-install` chowns to the
+`/usr/share/sddm/themes/vellum-ink/theme.conf`, which `sddm-install` chowns to the
 installing user for exactly that purpose. Everything else in the installed
 theme stays root-owned; re-run `sudo sddm-install` after changing the QML.
 
@@ -287,7 +288,7 @@ Theme scripts generate:
 - `~/.config/hypr/colors.lua` for the custom Hyprland Lua configuration.
 - `zen-theme.css` for Zen Browser chrome.
 - A `btop` theme in the user's btop configuration.
-- A Fastfetch configuration and matching Omi logo in the user's Fastfetch configuration.
+- A Fastfetch configuration and matching Vellum logo in the user's Fastfetch configuration.
 
 These files are generated, not automatically imported by every application.
 Add the relevant include or import to each application's configuration.
@@ -295,7 +296,7 @@ Add the relevant include or import to each application's configuration.
 ## Project structure
 
 ```text
-omi_shell/
+vellum_shell/
 ├── shell.qml              Main shell entry point and composition
 ├── LockShell.qml          Standalone lock-screen compatibility entry point
 ├── app/                   Popup lifecycle, coordination, and public IPC

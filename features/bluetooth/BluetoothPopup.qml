@@ -220,7 +220,7 @@ PanelWindow {
     }
 
     function openAdvancedSettings() {
-        advancedLauncher.command = ["sh", "-c", "exec \"$HOME/.config/quickshell/omi_shell/scripts/launch-bluetooth\""]
+        advancedLauncher.command = ["sh", "-c", "exec \"$HOME/.config/quickshell/vellum_shell/scripts/launch-bluetooth\""]
         advancedLauncher.running = true
         opened = false
     }
@@ -323,9 +323,10 @@ PanelWindow {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "藍"
+                            text: "󰂯"
                             color: panelBg
-                            font.pixelSize: 18
+                            font.family: "Symbols Nerd Font Mono"
+                            font.pixelSize: 20
                             font.weight: Font.DemiBold
                         }
                     }

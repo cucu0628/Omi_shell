@@ -16,11 +16,17 @@ Rectangle {
     signal hovered(int index)
     signal activated(int index)
 
+    function requestPreview() {
+        if (controller && entry && entry.isImage) controller.ensurePreview(entry)
+    }
+
     height: 58
     radius: 0
     color: selected || resultMouse.containsMouse ? inkBg : "transparent"
     border.color: "transparent"
     border.width: 0
+    onEntryChanged: requestPreview()
+    Component.onCompleted: requestPreview()
 
     Rectangle {
         width: 3
@@ -62,7 +68,7 @@ Rectangle {
 
                 anchors.fill: parent
                 anchors.margins: 2
-                source: resultRow.entry && resultRow.entry.isImage && resultRow.entry.preview !== "" && resultRow.controller ? resultRow.controller.previewSource(resultRow.entry.preview) : ""
+                source: resultRow.controller ? resultRow.controller.previewSource(resultRow.entry) : ""
                 sourceSize: Qt.size(136, 112)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true

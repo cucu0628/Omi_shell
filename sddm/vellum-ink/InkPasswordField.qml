@@ -72,22 +72,11 @@ Rectangle {
         Behavior on color { ColorAnimation { duration: 140 } }
     }
 
-    Text {
-        text: "鍵"
-        font.pixelSize: 15
-        color: passwordBox.edgeColor
-        anchors.left: parent.left
-        anchors.leftMargin: 19
-        anchors.verticalCenter: parent.verticalCenter
-
-        Behavior on color { ColorAnimation { duration: 140 } }
-    }
-
     Row {
         id: dots
 
         anchors.left: parent.left
-        anchors.leftMargin: 52
+        anchors.leftMargin: 20
         anchors.verticalCenter: parent.verticalCenter
         spacing: 7
 
@@ -115,7 +104,7 @@ Rectangle {
 
         width: 2
         height: 20
-        x: 52 + (passwordBox.dotCount > 0 ? dots.width + 6 : 0)
+        x: 20 + (passwordBox.dotCount > 0 ? dots.width + 6 : 0)
         anchors.verticalCenter: parent.verticalCenter
         color: passwordBox.edgeColor
         visible: !passwordBox.greeter.busy
@@ -137,7 +126,7 @@ Rectangle {
         opacity: 0.5
         font.pixelSize: 10
         font.letterSpacing: 4
-        x: 66
+        x: 34
         anchors.verticalCenter: parent.verticalCenter
     }
 

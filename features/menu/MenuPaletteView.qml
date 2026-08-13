@@ -52,9 +52,10 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "木"
+                        text: "󰍉"
                         color: root.bg
-                        font.pixelSize: 16
+                        font.family: "Symbols Nerd Font Mono"
+                        font.pixelSize: 18
                         font.weight: Font.DemiBold
                     }
 
@@ -65,7 +66,7 @@ Item {
                     spacing: 1
 
                     Text {
-                        text: "KOMOREBI"
+                        text: "VELLUM SHELL"
                         color: root.fg
                         font.pixelSize: 12
                         font.bold: true
@@ -73,7 +74,7 @@ Item {
                     }
 
                     Text {
-                        text: root.host && root.host.activeCategory !== "" ? "コマンドパレット  /  " + root.host.activeCategory : "コマンドパレット  /  command palette"
+                        text: root.host && root.host.activeCategory !== "" ? root.host.activeCategory : "Command palette"
                         color: root.muted
                         font.pixelSize: 9
                     }
@@ -90,7 +91,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "←  戻る / BACK"
+                        text: "←  BACK"
                         color: backMouse.containsMouse ? root.fg : root.muted
                         font.pixelSize: 9
                     }
@@ -115,7 +116,7 @@ Item {
                 height: 48
                 opened: root.host ? root.host.opened : false
                 indicator: "⌕"
-                placeholder: "コマンドを検索 / search commands..."
+                placeholder: "Search commands..."
                 inputLeftMargin: 44
                 inputVerticalPadding: 12
                 foreground: root.fg
@@ -201,7 +202,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     visible: root.host && root.host.isLoading
-                    text: "読み込み中 / LOADING..."
+                    text: "LOADING..."
                     color: root.accent
                     font.pixelSize: 10
                 }
@@ -209,7 +210,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     visible: root.host && !root.host.isLoading && root.host.visibleItems.length === 0
-                    text: root.host.searchQuery !== "" ? "結果なし / NO RESULTS" : "項目なし / EMPTY"
+                    text: root.host.searchQuery !== "" ? "NO RESULTS" : "EMPTY"
                     color: root.muted
                     font.pixelSize: 10
                 }
@@ -315,7 +316,7 @@ Item {
                                         visible: !modelData.readonly
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignRight
-                                        text: index === root.host.selectedIndex ? "ENTER  ↵" : (modelData.sub ? "OPEN  →" : "RUN  ↗")
+                                        text: root.host.confirmCommand !== "" && root.host.confirmCommand === modelData.command ? "CONFIRM  ↵" : (index === root.host.selectedIndex ? "ENTER  ↵" : (modelData.sub ? "OPEN  →" : "RUN  ↗"))
                                         color: index === root.host.selectedIndex ? root.accent : root.muted
                                         font.family: "monospace"
                                         font.pixelSize: 8

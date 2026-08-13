@@ -124,7 +124,7 @@ PanelWindow {
                     spacing: 3
 
                     Text {
-                        text: "ABOUT OMI SHELL"
+                        text: "ABOUT VELLUM SHELL"
                         color: panelFg
                         font.pixelSize: 12
                         font.letterSpacing: 3
@@ -148,7 +148,7 @@ PanelWindow {
 
                     Text {
                         anchors.right: parent.right
-                        text: systemInfo.shellVersion !== "" ? systemInfo.shellVersion : "omi shell"
+                        text: systemInfo.shellVersion !== "" ? systemInfo.shellVersion : "Vellum Shell"
                         color: panelFg
                         font.pixelSize: 15
                         font.weight: Font.Light
@@ -218,7 +218,7 @@ PanelWindow {
                             Image {
                                 id: fastfetchLogo
                                 anchors.fill: parent
-                                source: "file://" + Quickshell.env("HOME") + "/.config/fastfetch/omi.png"
+                                source: "file://" + Quickshell.env("HOME") + "/.config/fastfetch/vellum.png"
                                 sourceSize: Qt.size(420, 420)
                                 fillMode: Image.PreserveAspectFit
                                 asynchronous: true
@@ -235,7 +235,7 @@ PanelWindow {
 
                         Text {
                             width: parent.width
-                            text: "OMI SHELL"
+                            text: "VELLUM SHELL"
                             color: panelFg
                             font.pixelSize: 18
                             font.bold: true

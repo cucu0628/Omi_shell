@@ -32,7 +32,7 @@ Item {
     }
 
     function load() {
-        loader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/omi_shell/scripts/theme-read\""]
+        loader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/vellum_shell/scripts/theme-read\""]
         loader.running = true
     }
 

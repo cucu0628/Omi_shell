@@ -90,7 +90,7 @@ PanelWindow {
 
                     Text {
                         width: parent.width - 48
-                        text: "音量  /  VOLUME"
+                        text: "VOLUME"
                         color: osd.panelAccent
                         font.pixelSize: 9
                         font.bold: true

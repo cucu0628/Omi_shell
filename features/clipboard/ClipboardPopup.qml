@@ -184,9 +184,10 @@ PanelWindow {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "貼"
+                            text: "󰅌"
                             color: panelBg
-                            font.pixelSize: 18
+                            font.family: "Symbols Nerd Font Mono"
+                            font.pixelSize: 20
                             font.weight: Font.DemiBold
                         }
 
@@ -206,7 +207,7 @@ PanelWindow {
                         }
 
                         Text {
-                            text: "貼り付け履歴  /  paste memory"
+                            text: "Clipboard history"
                             color: mutedFg
                             font.pixelSize: 9
                         }
@@ -235,7 +236,7 @@ PanelWindow {
                     muted: clipboardWindow.mutedFg
                     surface: clipboardWindow.inkBg
                     opened: clipboardWindow.opened
-                    placeholder: "履歴を検索 / search clipboard..."
+                    placeholder: "Search clipboard..."
                     inputLeftMargin: 44
                     inputVerticalPadding: 12
                     onTextEdited: (text) => {
@@ -267,7 +268,7 @@ PanelWindow {
                         Text {
                             visible: visibleItems.length === 0
                             anchors.centerIn: parent
-                            text: "結果なし / NO CLIPBOARD MATCHES"
+                            text: "NO CLIPBOARD MATCHES"
                             color: mutedFg
                             font.pixelSize: 10
                         }

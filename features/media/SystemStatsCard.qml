@@ -11,7 +11,7 @@ SharedUi.DashPanel {
     readonly property color lineBg: Qt.rgba(1, 1, 1, 0.055)
 
     title: "SYSTEM"
-    kanji: "状態"
+    kanji: ""
     trailing: "LIVE"
 
     Row {

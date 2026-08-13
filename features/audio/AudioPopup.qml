@@ -230,9 +230,10 @@ PanelWindow {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "音"
+                                text: "󰕾"
                                 color: panelBg
-                                font.pixelSize: 18
+                                font.family: "Symbols Nerd Font Mono"
+                                font.pixelSize: 20
                                 font.weight: Font.DemiBold
                             }
 
@@ -253,7 +254,7 @@ PanelWindow {
 
                             Text {
                                 width: parent.width
-                                text: Pipewire.ready ? "音声ミキサー  /  komorebi audio" : "PipeWireを待っています / waiting"
+                                text: Pipewire.ready ? "PipeWire audio mixer" : "Waiting for PipeWire"
                                 color: mutedFg
                                 font.pixelSize: 9
                                 elide: Text.ElideRight

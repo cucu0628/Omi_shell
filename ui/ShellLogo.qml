@@ -1,6 +1,6 @@
 import QtQuick
 
-// Omi shell mark: a torii gate drawn from flat rectangles so it stays crisp at
+// Vellum Shell mark: a torii gate drawn from flat rectangles so it stays crisp at
 // bar size and takes the theme colour like the glyph it replaces. Geometry is
 // laid out on a 16x16 grid and scaled by `size`.
 Item {

@@ -3,7 +3,7 @@ import QtQml
 import QtQuick.Window
 import "." as Ink
 
-// omi_shell "Omi Ink" greeter – a lockscreen (features/lock) vizualis nyelve
+// Vellum Shell "Vellum Ink" greeter, a lock screen vizualis nyelve.
 // SDDM-re forditva: enso hatter, shoji-redony, pecset, azonos szinpaletta.
 Item {
     id: root
@@ -73,14 +73,12 @@ Item {
 
     // --- ora, ugyanaz a formazas mint a LockRoot-ban ---
     readonly property var dayNames: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
-    readonly property var dayKanji: ["月", "火", "水", "木", "金", "土", "日"]
     readonly property var monthNames: ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
 
     readonly property int weekdayIndex: (currentTime.getDay() + 6) % 7
     readonly property string timeText: two(currentTime.getHours()) + ":" + two(currentTime.getMinutes())
     readonly property string secondsText: two(currentTime.getSeconds())
     readonly property string weekdayText: dayNames[weekdayIndex]
-    readonly property string weekdayKanji: dayKanji[weekdayIndex] + "曜日"
     readonly property string dateText: monthNames[currentTime.getMonth()] + " " + currentTime.getDate() + "  ·  " + currentTime.getFullYear()
     readonly property real dayProgress: (currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds()) / 86400
 

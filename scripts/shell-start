@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+shell_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+
+# Wait for Hyprland to finish configuring outputs before creating surfaces.
+sleep 2
+
+export MALLOC_CONF='background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:1000'
+exec quickshell -p "$shell_dir/"

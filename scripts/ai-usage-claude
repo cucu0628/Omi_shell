@@ -1,0 +1,163 @@
+#!/usr/bin/python3
+"""Print Claude Code subscription limits as JSON."""
+
+import argparse
+import datetime as dt
+import json
+import os
+import re
+import tempfile
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+USAGE_ENDPOINT = "https://api.anthropic.com/api/oauth/usage"
+CACHE_SECONDS = 30
+
+
+def cache_path():
+  root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "vellum-shell"
+  root.mkdir(parents=True, exist_ok=True)
+  return root / "ai-usage-claude.json"
+
+
+def read_cache(max_age=None):
+  path = cache_path()
+  try:
+    if max_age is not None and time.time() - path.stat().st_mtime > max_age:
+      return None
+    return json.loads(path.read_text(encoding="utf-8"))
+  except Exception:
+    return None
+
+
+def write_cache(payload):
+  path = cache_path()
+  fd, name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".")
+  try:
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+      json.dump(payload, handle, separators=(",", ":"))
+    Path(name).replace(path)
+  except BaseException:
+    Path(name).unlink(missing_ok=True)
+    raise
+
+
+def number(value):
+  try:
+    return int(float(value or 0))
+  except Exception:
+    return 0
+
+
+def credentials():
+  root = Path(os.path.expandvars(os.path.expanduser(os.environ.get("CLAUDE_CONFIG_DIR") or "~/.claude")))
+  try:
+    login = json.loads((root / ".credentials.json").read_text(encoding="utf-8")).get("claudeAiOauth") or {}
+  except Exception:
+    return "", 0, ""
+  tier = str(login.get("rateLimitTier") or "")
+  subscription = str(login.get("subscriptionType") or "")
+  match = re.search(r"max_(\d+x)", tier, re.IGNORECASE)
+  plan = "Max " + match.group(1) if match else (subscription.capitalize() if subscription else "")
+  return str(login.get("accessToken") or ""), number(login.get("expiresAt")), plan
+
+
+def utilization(value, percent_scale):
+  try:
+    amount = float(str(value).strip().replace("%", ""))
+  except Exception:
+    return None
+  if amount < 0:
+    return None
+  if percent_scale or amount > 1:
+    amount /= 100
+  return min(1.0, amount)
+
+
+def reset_at(value):
+  if value is None:
+    return ""
+  raw = str(value).strip()
+  if raw.isdigit():
+    timestamp = int(raw)
+    if timestamp > 10_000_000_000:
+      timestamp /= 1000
+    return dt.datetime.fromtimestamp(timestamp, dt.timezone.utc).isoformat()
+  try:
+    return dt.datetime.fromisoformat(raw.replace("Z", "+00:00")).isoformat()
+  except Exception:
+    return raw
+
+
+def window(payload, key, label, percent_scale):
+  bucket = payload.get(key)
+  if not isinstance(bucket, dict):
+    return None
+  used = utilization(bucket.get("utilization"), percent_scale)
+  if used is None:
+    return None
+  return {"label": label, "used": used, "remaining": max(0, 1 - used), "resetsAt": reset_at(bucket.get("resets_at"))}
+
+
+def fetch(token, plan):
+  request = urllib.request.Request(USAGE_ENDPOINT, headers={
+    "Authorization": "Bearer " + token,
+    "anthropic-beta": "oauth-2025-04-20",
+    "Accept": "application/json",
+  })
+  with urllib.request.urlopen(request, timeout=10) as response:
+    payload = json.loads(response.read().decode("utf-8", errors="replace"))
+
+  session = payload.get("five_hour")
+  weekly = payload.get("seven_day_oauth_apps") or payload.get("seven_day")
+  raw = []
+  for bucket in (session, weekly):
+    if isinstance(bucket, dict):
+      raw.append(bucket.get("utilization"))
+  percent_scale = any(float(str(value).replace("%", "")) >= 1 for value in raw if value is not None)
+
+  limits = []
+  for entry in (
+    window(payload, "five_hour", "Session (5-hour)", percent_scale),
+    window(payload, "seven_day_oauth_apps", "Weekly (7-day)", percent_scale)
+      or window(payload, "seven_day", "Weekly (7-day)", percent_scale),
+  ):
+    if entry:
+      limits.append(entry)
+  return {"id": "claude", "name": "Claude Code", "plan": plan, "ready": bool(limits), "status": "", "limits": limits, "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat()}
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--force", action="store_true")
+  args = parser.parse_args()
+
+  if not args.force:
+    cached = read_cache(CACHE_SECONDS)
+    if cached:
+      print(json.dumps(cached, separators=(",", ":")))
+      return
+
+  token, expires_at, plan = credentials()
+  cached = read_cache()
+  if not token:
+    result = {"id": "claude", "name": "Claude Code", "plan": plan, "ready": False, "status": "Run `claude auth login`", "limits": []}
+  elif expires_at and expires_at <= time.time() * 1000:
+    result = {"id": "claude", "name": "Claude Code", "plan": plan, "ready": False, "status": "Claude sign-in expired", "limits": []}
+  else:
+    try:
+      result = fetch(token, plan)
+      write_cache(result)
+    except urllib.error.HTTPError as error:
+      result = cached or {"id": "claude", "name": "Claude Code", "plan": plan, "ready": False, "limits": []}
+      result["status"] = "Usage endpoint returned HTTP " + str(error.code)
+    except Exception:
+      result = cached or {"id": "claude", "name": "Claude Code", "plan": plan, "ready": False, "limits": []}
+      result["status"] = "Claude limits unavailable"
+  print(json.dumps(result, separators=(",", ":")))
+
+
+if __name__ == "__main__":
+  main()

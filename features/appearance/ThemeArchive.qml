@@ -42,7 +42,7 @@ Item {
         height: 208
         theme: archive.theme
         title: "SCENE"
-        kanji: "場面"
+        kanji: ""
         trailing: archive.selectedTheme ? archive.selectedTheme.kind.toUpperCase() : ""
 
         Text {
@@ -103,19 +103,8 @@ Item {
             border.width: 1
             Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
-            Text {
-                id: dynamicGlyph
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                text: "彩"
-                color: archive.dynamicSelected ? archive.panelBg : archive.panelAccent
-                font.pixelSize: 18
-                font.bold: true
-            }
-
             Column {
-                anchors.left: dynamicGlyph.right
+                anchors.left: parent.left
                 anchors.leftMargin: 12
                 anchors.right: parent.right
                 anchors.rightMargin: 10
@@ -160,7 +149,7 @@ Item {
         anchors.bottomMargin: 12
         theme: archive.theme
         title: "PALETTE ARCHIVE"
-        kanji: "蔵"
+        kanji: ""
         trailing: archive.themeItems.length + "  ·  D DYNAMIC"
 
         Flickable {

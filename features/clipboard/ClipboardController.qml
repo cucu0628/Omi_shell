@@ -7,9 +7,12 @@ Item {
 
     property var entries: []
     property bool refreshPending: false
+    property var decodedPreviews: ({})
+    property var decodeQueue: []
 
-    readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/quickshell/omi_shell"
+    readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/quickshell/vellum-shell"
     readonly property string imageDir: stateDir + "/cliphist-images"
+    readonly property string thumbnailDir: stateDir + "/cliphist-thumbnails"
 
     width: 0
     height: 0
@@ -23,7 +26,7 @@ Item {
             return
         }
 
-        fetcher.command = ["sh", "-c", "mkdir -p " + shellQuote(imageDir) + "; cliphist list 2>/dev/null | head -n 100 | while IFS=\"$(printf '\\t')\" read -r id preview; do case \"$preview\" in '[[ binary data '*) format=$(printf '%s\\n' \"$preview\" | cut -d' ' -f6); case \"$format\" in png|jpg|jpeg|webp|gif|bmp|tiff) ;; *) format=bin ;; esac; path=" + shellQuote(imageDir) + "/cliphist-$id.$format; if [ ! -s \"$path\" ]; then tmp=\"$path.tmp\"; cliphist decode \"$id\" > \"$tmp\" && mv \"$tmp\" \"$path\" || rm -f \"$tmp\"; fi ;; esac; printf '%s\\t%s\\n' \"$id\" \"$preview\"; done"]
+        fetcher.command = ["sh", "-c", "mkdir -p " + shellQuote(imageDir) + "; cliphist list 2>/dev/null | head -n 100"]
         fetcher.running = true
     }
 
@@ -80,13 +83,15 @@ Item {
                 title: isImage ? "Image clipboard" : compactText(preview),
                 text: isImage ? "" : preview,
                 subtitle: isImage ? "Clipboard image" : "Clipboard history",
-                preview: isImage ? imageDir + "/cliphist-" + identifier + "." + extension : "",
+                preview: isImage ? thumbnailDir + "/cliphist-" + identifier + ".png" : "",
+                original: isImage ? imageDir + "/cliphist-" + identifier + "." + extension : "",
                 isImage: isImage,
                 source: "cliphist"
             })
         }
 
         entries = parsed
+        prunePreviewCache(parsed)
     }
 
     function entryTypeLabel(item) {
@@ -95,11 +100,36 @@ Item {
         return (item.text || "").length >= 100 ? "LONG TEXT" : "TEXT"
     }
 
-    function previewSource(path) {
-        if (!path) return ""
-        if (path.startsWith("file:")) return path
-        if (path.startsWith("/")) return "file://" + path
-        return path
+    function previewSource(item) {
+        if (!item || !item.isImage) return ""
+        return decodedPreviews[item.identifier] || ""
+    }
+
+    function ensurePreview(item) {
+        if (!item || !item.isImage || decodedPreviews[item.identifier]) return
+        if (previewDecoder.running && previewDecoder.identifier === item.identifier) return
+        for (var i = 0; i < decodeQueue.length; i++) {
+            if (decodeQueue[i].identifier === item.identifier) return
+        }
+        decodeQueue = decodeQueue.concat([item])
+        startNextDecode()
+    }
+
+    function startNextDecode() {
+        if (previewDecoder.running || decodeQueue.length === 0) return
+        var item = decodeQueue[0]
+        decodeQueue = decodeQueue.slice(1)
+        previewDecoder.identifier = item.identifier
+        previewDecoder.outputPath = item.preview
+        previewDecoder.command = ["sh", "-c", "mkdir -p " + shellQuote(imageDir) + " " + shellQuote(thumbnailDir) + "; original=" + shellQuote(item.original) + "; thumb=" + shellQuote(item.preview) + "; if [ ! -s \"$thumb\" ]; then raw=\"$original.tmp\"; out=\"$thumb.tmp.png\"; cliphist decode " + shellQuote(item.identifier) + " > \"$raw\" && magick \"$raw\" -auto-orient -thumbnail '136x112^' -gravity center -extent 136x112 -strip \"$out\" && mv \"$out\" \"$thumb\"; rm -f \"$raw\" \"$out\"; fi; [ -s \"$thumb\" ]"]
+        previewDecoder.running = true
+    }
+
+    function prunePreviewCache(currentEntries) {
+        var identifiers = " "
+        for (var i = 0; i < currentEntries.length; i++) identifiers += currentEntries[i].identifier + " "
+        cachePruner.command = ["sh", "-c", "keep=" + shellQuote(identifiers) + "; for dir in " + shellQuote(imageDir) + " " + shellQuote(thumbnailDir) + "; do [ -d \"$dir\" ] || continue; for path in \"$dir\"/cliphist-*; do [ -e \"$path\" ] || continue; name=${path##*/cliphist-}; id=${name%%.*}; case \"$keep\" in *\" $id \"*) ;; *) rm -f \"$path\" ;; esac; done; done"]
+        if (!cachePruner.running) cachePruner.running = true
     }
 
     function activate(item) {
@@ -111,7 +141,7 @@ Item {
     function remove(item) {
         if (!item) return
 
-        deleteProcess.command = ["sh", "-c", "printf '%s\\n' " + shellQuote(item.identifier) + " | cliphist delete; rm -f " + shellQuote(imageDir + "/cliphist-" + item.identifier) + ".*"]
+        deleteProcess.command = ["sh", "-c", "printf '%s\\n' " + shellQuote(item.identifier) + " | cliphist delete; rm -f " + shellQuote(imageDir + "/cliphist-" + item.identifier) + ".* " + shellQuote(thumbnailDir + "/cliphist-" + item.identifier) + ".*"]
         deleteProcess.running = true
 
         var nextEntries = []
@@ -162,4 +192,20 @@ Item {
 
     Process { id: activateProcess }
     Process { id: deleteProcess }
+
+    Process {
+        id: previewDecoder
+        property string identifier: ""
+        property string outputPath: ""
+        onExited: exitCode => {
+            if (exitCode === 0) {
+                var next = Object.assign({}, controller.decodedPreviews)
+                next[identifier] = "file://" + outputPath
+                controller.decodedPreviews = next
+            }
+            controller.startNextDecode()
+        }
+    }
+
+    Process { id: cachePruner }
 }

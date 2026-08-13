@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base="$HOME/.config/quickshell/omi_shell"
+base="$HOME/.config/quickshell/vellum_shell"
 bgdir="$HOME/Pictures/wallpapers"
 wallpaper=${1:-}
 out_dir="$base/themes/dynamic-matugen"

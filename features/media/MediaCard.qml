@@ -33,7 +33,7 @@ Item {
     readonly property string trackTitle: player && player.trackTitle !== "" ? player.trackTitle : "No music playing"
     readonly property string trackArtist: player && player.trackArtist !== ""
         ? player.trackArtist
-        : (player && player.identity ? player.identity : "静かな時間")
+        : (player && player.identity ? player.identity : "No active source")
 
     function playerIcon(value) {
         if (!value) return "󰎆"
@@ -105,7 +105,7 @@ Item {
         visible: card.compact
         theme: card.theme
         title: card.statusLabel
-        kanji: "音"
+        kanji: ""
         trailing: card.player && card.player.identity ? card.player.identity.toUpperCase() : "NO SOURCE"
 
         Rectangle {
@@ -124,7 +124,7 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 1
                 source: card.artworkEnabled && card.compact && card.player && card.player.trackArtUrl !== "" ? card.player.trackArtUrl : ""
-                sourceSize: Qt.size(256, 256)
+                sourceSize: Qt.size(192, 192)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: false
@@ -132,7 +132,7 @@ Item {
             }
 
             Rectangle { anchors.fill: parent; anchors.margins: 1; color: card.background; opacity: 0.18; visible: compactArt.visible }
-            Text { anchors.centerIn: parent; text: "音"; color: card.accent; font.pixelSize: 34; opacity: 0.72; visible: !compactArt.visible }
+            Text { anchors.centerIn: parent; text: "󰎆"; color: card.accent; font.family: "Symbols Nerd Font Mono"; font.pixelSize: 34; opacity: 0.72; visible: !compactArt.visible }
         }
 
         Column {
@@ -246,7 +246,7 @@ Item {
         visible: !card.compact
         theme: card.theme
         title: "MEDIA"
-        kanji: "音楽"
+        kanji: ""
         trailing: card.statusLabel
 
         Item {
@@ -272,7 +272,7 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 1
                     source: card.artworkEnabled && !card.compact && card.player && card.player.trackArtUrl !== "" ? card.player.trackArtUrl : ""
-                    sourceSize: Qt.size(512, 512)
+                    sourceSize: Qt.size(256, 256)
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     cache: false
@@ -280,7 +280,7 @@ Item {
                 }
 
                 Rectangle { anchors.fill: parent; anchors.margins: 1; color: card.background; opacity: 0.16; visible: fullArt.visible }
-                Text { anchors.centerIn: parent; text: "音"; color: card.accent; font.pixelSize: 46; opacity: 0.6; visible: !fullArt.visible }
+                Text { anchors.centerIn: parent; text: "󰎆"; color: card.accent; font.family: "Symbols Nerd Font Mono"; font.pixelSize: 46; opacity: 0.6; visible: !fullArt.visible }
                 Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 3; color: card.accent; opacity: 0.9 }
             }
 

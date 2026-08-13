@@ -11,9 +11,6 @@ Item {
     readonly property string stateText: lockRoot.failed
         ? "ACCESS DENIED"
         : (lockRoot.unlockInProgress ? "AUTHENTICATING" : "SESSION SECURED")
-    readonly property string stateKanji: lockRoot.failed
-        ? "拒否"
-        : (lockRoot.unlockInProgress ? "認証中" : "施錠中")
 
     focus: true
 
@@ -69,14 +66,6 @@ Item {
                 font.weight: Font.DemiBold
 
                 Behavior on color { ColorAnimation { duration: 160 } }
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: ambientView.stateKanji
-                color: ambientView.lockRoot.accent
-                font.pixelSize: 11
-                font.letterSpacing: 3
             }
 
             // A begépelt karakterek a többi kijelzőn is látszanak.

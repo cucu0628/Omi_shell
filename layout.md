@@ -1,18 +1,18 @@
-# Omi Shell célstruktúra
+# Vellum Shell célstruktúra
 
 Ez a dokumentum a shell végleges, feature-alapú szerkezetét írja le. A gyökérben csak a stabil belépési pontok, a felhasználói adatok és a külső segédprogramok maradnak. Az alkalmazás-összeállítás az `app/`, a platform- és állapotkezelés a `core/`, az újrahasznosítható vizuális elemek a `ui/`, az önálló felületek pedig a `features/` könyvtárba kerülnek.
 
 ## Célfa
 
 ```text
-omi_shell/
+vellum_shell/
 ├── shell.qml                         # Stabil fő belépési pont, csak kompozíció
 ├── LockShell.qml                     # Stabil külön processzes lock belépési pont
 ├── layout.md                         # Architektúra és célstruktúra
 ├── README.md                         # Telepítés, használat és IPC dokumentáció
 │
 ├── assets/                           # Statikus erőforrások
-│   └── omi-logo.svg                  # A shell emblémája QML-en kívüli használatra
+│   └── vellum-logo.svg                  # A shell emblémája QML-en kívüli használatra
 │
 ├── app/                              # Alkalmazásszintű összekötés
 │   ├── PopupCoordinator.qml          # Popup kizárás, monitor és nyitási szabályok
@@ -56,7 +56,6 @@ omi_shell/
 │   │   ├── NotificationStatusItem.qml
 │   │   ├── BtopStatusItem.qml
 │   │   ├── BatteryStatusItem.qml
-│   │   └── PowerStatusItem.qml
 │   │
 │   ├── menu/
 │   │   ├── MenuPopup.qml
@@ -116,9 +115,6 @@ omi_shell/
 │   │   └── ThemeArchive.qml
 │   │
 │   │
-│   ├── power/
-│   │   ├── PowerMenu.qml
-│   │   └── PowerActionCard.qml
 │   │
 │   ├── about/
 │   │   ├── AboutPopup.qml
@@ -138,7 +134,7 @@ omi_shell/
 │       ├── LockBackground.qml        # Csendes háttér: ensō kör, vignetta
 │       ├── LockGlow.qml              # Rétegzett puha fényfolt
 │       ├── LockShutter.qml           # Shoji nyitó/záró animáció minden monitoron
-│       ├── LockSeal.qml              # Forgó 守 pecsét
+│       ├── LockSeal.qml              # Forgó zárjel
 │       ├── LockClock.qml             # Óra, dátum, napi haladásjelző
 │       ├── LockCard.qml              # Beviteli monitor panelje
 │       ├── AmbientLockView.qml       # Többi monitor ambient nézete

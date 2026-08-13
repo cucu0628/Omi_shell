@@ -29,7 +29,7 @@ Rectangle {
     Image {
         anchors.fill: parent
         source: preview.selectedWallpaper ? preview.imageSource(preview.selectedWallpaper.path) : ""
-        sourceSize: Qt.size(1280, 1280)
+        sourceSize: Qt.size(Math.min(960, Math.max(1, width)), Math.min(640, Math.max(1, height)))
         fillMode: Image.PreserveAspectCrop
         smooth: true
         asynchronous: true
@@ -150,7 +150,7 @@ Rectangle {
             anchors.left: mockTitle.left
             anchors.right: mockTitle.right
             y: 32
-            text: "献立  /  komorebi"
+            text: "Vellum Shell"
             color: preview.previewMuted
             font.pixelSize: 8
             elide: Text.ElideRight
@@ -210,17 +210,6 @@ Rectangle {
                 }
             }
         }
-    }
-
-    Text {
-        anchors.right: parent.right
-        anchors.rightMargin: 14
-        anchors.verticalCenter: parent.verticalCenter
-        text: "景\n色"
-        color: preview.previewFg
-        opacity: 0.16
-        font.pixelSize: 38
-        lineHeight: 0.82
     }
 
     // Flat plaque rather than bare text: the name sits over arbitrary artwork,
@@ -284,7 +273,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 4
 
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "適用"; color: preview.previewAccent; font.pixelSize: 20; font.bold: true }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "󰄬"; color: preview.previewAccent; font.family: "Symbols Nerd Font Mono"; font.pixelSize: 20 }
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: "SCENE APPLIED"; color: preview.previewFg; font.pixelSize: 9; font.bold: true; font.letterSpacing: 2 }
         }
     }

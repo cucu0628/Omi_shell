@@ -7,7 +7,7 @@ Item {
     property bool active: false
     property bool available: false
     property var values: [0, 0, 0, 0, 0, 0]
-    readonly property string configPath: "/tmp/omi-shell-cava-" + Date.now() + "-" + Math.floor(Math.random() * 1000000) + ".conf"
+    readonly property string configPath: "/tmp/vellum-shell-cava-" + Date.now() + "-" + Math.floor(Math.random() * 1000000) + ".conf"
 
     width: 0
     height: 0

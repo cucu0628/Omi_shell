@@ -146,7 +146,7 @@ PanelWindow {
 
                         Text {
                             width: parent.width
-                            text: "景色  /  wallpaper and palette as one scene"
+                            text: "Wallpaper and palette as one scene"
                             color: mutedFg
                             font.pixelSize: 9
                             elide: Text.ElideRight
@@ -162,8 +162,8 @@ PanelWindow {
 
                         Repeater {
                             model: [
-                                { key: "wallpaper", label: "WALLPAPER", kanji: "壁紙" },
-                                { key: "theme", label: "PALETTE", kanji: "色" }
+                                { key: "wallpaper", label: "WALLPAPER" },
+                                { key: "theme", label: "PALETTE" }
                             ]
 
                             Rectangle {
@@ -190,13 +190,6 @@ PanelWindow {
                                         font.bold: true
                                     }
 
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.kanji
-                                        color: sectionChip.selected ? panelBg : mutedFg
-                                        font.pixelSize: 10
-                                        opacity: 0.8
-                                    }
                                 }
 
                                 MouseArea {

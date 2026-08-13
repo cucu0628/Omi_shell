@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-shell_path="$HOME/.config/quickshell/omi_shell/shell.qml"
+shell_path="$HOME/.config/quickshell/vellum_shell/shell.qml"
 quickshell kill --path "$shell_path" 2>/dev/null || true
-quickshell --path "$shell_path" --daemonize
+MALLOC_CONF='background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:1000' \
+  quickshell --path "$shell_path" --daemonize

@@ -20,8 +20,8 @@ direction_name() {
 describe_command() {
     local command="$1"
 
-    if [[ "$command" =~ omi_shell[^\"]*[[:space:]]ipc[[:space:]]call[[:space:]](.+) ]]; then
-        printf 'Omi: %s' "${BASH_REMATCH[1]}"
+    if [[ "$command" =~ vellum_shell[^\"]*[[:space:]]ipc[[:space:]]call[[:space:]](.+) ]]; then
+        printf 'Vellum: %s' "${BASH_REMATCH[1]}"
     elif [[ "$command" =~ ^dms[[:space:]]ipc[[:space:]]call[[:space:]](.+) ]]; then
         printf 'DMS: %s' "${BASH_REMATCH[1]}"
     else

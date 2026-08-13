@@ -5,12 +5,12 @@ QtObject {
     required property var launcher
     required property var clipboard
     required property var themeSwitcher
-    required property var powerMenu
     required property var mediaPopup
     required property var audioPopup
     required property var networkPopup
     required property var bluetoothPopup
     required property var vpnPopup
+    required property var aiPopup
     required property var vpnCli
     required property var aboutPopup
     required property var notifications
@@ -24,6 +24,7 @@ QtObject {
         networkPopup.opened = false
         bluetoothPopup.opened = false
         vpnPopup.opened = false
+        aiPopup.opened = false
         notifications.menuOpened = false
         if (nextScreen) mediaPopup.screen = nextScreen
         mediaPopup.opened = !openHere
@@ -35,6 +36,7 @@ QtObject {
 
     function setNotificationsOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
@@ -42,7 +44,6 @@ QtObject {
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -52,13 +53,13 @@ QtObject {
 
     function setMenuOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -69,13 +70,13 @@ QtObject {
 
     function setLauncherOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
             menu.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -86,13 +87,13 @@ QtObject {
 
     function setClipboardOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -103,13 +104,13 @@ QtObject {
 
     function setThemeSwitcherOpen(open, nextMode, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
-            powerMenu.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -119,25 +120,9 @@ QtObject {
         themeSwitcher.opened = open
     }
 
-    function setPowerMenuOpen(open, nextScreen) {
-        if (open) {
-            networkPopup.opened = false
-            bluetoothPopup.opened = false
-            vpnPopup.opened = false
-            menu.opened = false
-            launcher.opened = false
-            clipboard.opened = false
-            themeSwitcher.opened = false
-            audioPopup.opened = false
-            aboutPopup.opened = false
-            notifications.menuOpened = false
-            if (nextScreen) powerMenu.screen = nextScreen
-        }
-        powerMenu.opened = open
-    }
-
     function setAudioOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
@@ -145,7 +130,6 @@ QtObject {
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             aboutPopup.opened = false
             notifications.menuOpened = false
@@ -156,6 +140,7 @@ QtObject {
 
     function setAboutOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             networkPopup.opened = false
             bluetoothPopup.opened = false
             vpnPopup.opened = false
@@ -163,7 +148,6 @@ QtObject {
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             notifications.menuOpened = false
@@ -174,11 +158,11 @@ QtObject {
 
     function setNetworkOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -200,10 +184,6 @@ QtObject {
 
     function toggleClipboard(nextScreen) {
         setClipboardOpen(!(clipboard.opened && nextScreen && clipboard.screen === nextScreen), nextScreen)
-    }
-
-    function togglePowerMenu(nextScreen) {
-        setPowerMenuOpen(!(powerMenu.opened && nextScreen && powerMenu.screen === nextScreen), nextScreen)
     }
 
     function closeThemeSwitcher() {
@@ -228,11 +208,11 @@ QtObject {
 
     function setBluetoothOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -250,11 +230,11 @@ QtObject {
 
     function setVpnOpen(open, nextScreen) {
         if (open) {
+            aiPopup.opened = false
             menu.opened = false
             launcher.opened = false
             clipboard.opened = false
             themeSwitcher.opened = false
-            powerMenu.opened = false
             mediaPopup.opened = false
             audioPopup.opened = false
             aboutPopup.opened = false
@@ -268,6 +248,28 @@ QtObject {
 
     function toggleVpn(nextScreen) {
         setVpnOpen(!(vpnPopup.opened && nextScreen && vpnPopup.screen === nextScreen), nextScreen)
+    }
+
+    function setAiOpen(open, nextScreen) {
+        if (open) {
+            menu.opened = false
+            launcher.opened = false
+            clipboard.opened = false
+            themeSwitcher.opened = false
+            mediaPopup.opened = false
+            audioPopup.opened = false
+            aboutPopup.opened = false
+            networkPopup.opened = false
+            bluetoothPopup.opened = false
+            vpnPopup.opened = false
+            notifications.menuOpened = false
+            if (nextScreen) aiPopup.screen = nextScreen
+        }
+        aiPopup.opened = open
+    }
+
+    function toggleAi(nextScreen) {
+        setAiOpen(!(aiPopup.opened && nextScreen && aiPopup.screen === nextScreen), nextScreen)
     }
 
     // The panel is opened alongside the action so a keybinding still gives

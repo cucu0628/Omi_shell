@@ -99,5 +99,5 @@ fi
 printf 'AUR-csomagok ellenőrzése és telepítése...\n'
 "$aur_helper" -S --needed "${aur_packages[@]}"
 
-printf '\nMinden Omi Shell-függőség telepítve van.\n'
+printf '\nMinden Vellum Shell-függőség telepítve van.\n'
 printf 'A NetworkManager és Bluetooth szolgáltatásokat szükség esetén külön engedélyezd.\n'

@@ -9,7 +9,7 @@ QtObject {
 
     function load() {
         ready = false
-        loader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/omi_shell/scripts/lockscreen-monitor\" current"]
+        loader.command = ["sh", "-c", "sh \"$HOME/.config/quickshell/vellum_shell/scripts/lockscreen-monitor\" current"]
         loader.running = true
     }
 

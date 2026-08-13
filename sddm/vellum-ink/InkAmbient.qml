@@ -11,9 +11,6 @@ Item {
     readonly property string stateText: greeter.failed
         ? "ACCESS DENIED"
         : (greeter.busy ? "AUTHENTICATING" : "AWAITING SIGN IN")
-    readonly property string stateKanji: greeter.failed
-        ? "拒否"
-        : (greeter.busy ? "認証中" : "待機中")
 
     focus: true
 
@@ -69,14 +66,6 @@ Item {
                 font.weight: Font.DemiBold
 
                 Behavior on color { ColorAnimation { duration: 160 } }
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: ambient.stateKanji
-                color: ambient.greeter.accent
-                font.pixelSize: 11
-                font.letterSpacing: 3
             }
 
             // A begepelt karakterek a tobbi kijelzon is latszanak.
