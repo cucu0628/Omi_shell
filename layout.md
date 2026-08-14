@@ -27,6 +27,8 @@ vellum_shell/
 │   ├── AudioSummaryController.qml    # Panel hangerőállapot
 │   ├── BatteryStatusController.qml   # Opcionális rendszerakku állapot
 │   ├── VpnStatusController.qml       # Aktív VPN lekérdezése
+│   ├── PrivacyController.qml         # Mikrofon- és kamerahasználat figyelése
+│   ├── RemovableDeviceController.qml # Cserélhető kötetek és mount műveletek
 │   ├── MprisController.qml           # Aktív médialejátszó kiválasztása
 │   └── CommandRunner.qml             # Megosztott parancsindítás, ahol indokolt
 │
@@ -47,11 +49,12 @@ vellum_shell/
 │   ├── bar/
 │   │   ├── BarWindow.qml
 │   │   ├── WorkspaceGroup.qml
+│   │   ├── PrivacyStatusItem.qml     # Mikrofon/kamera jelző a workspacek mellett
 │   │   ├── CenterClock.qml
 │   │   ├── TrayGroup.qml
-│   │   ├── WifiStatusItem.qml
+│   │   ├── ConnectivityStatusItem.qml # Hálózat + VPN egyetlen modulban
 │   │   ├── BluetoothStatusItem.qml
-│   │   ├── VpnStatusItem.qml
+│   │   ├── RemovableDeviceStatusItem.qml
 │   │   ├── AudioStatusItem.qml
 │   │   ├── NotificationStatusItem.qml
 │   │   ├── BtopStatusItem.qml
@@ -80,7 +83,9 @@ vellum_shell/
 │   │   ├── NotificationsHost.qml
 │   │   ├── NotificationsController.qml
 │   │   ├── NotificationToast.qml
-│   │   └── NotificationCenter.qml
+│   │   ├── NotificationCenter.qml
+│   │   ├── NotificationGroup.qml     # Alkalmazás szerinti csoport fejléccel és nyitható listával
+│   │   └── NotificationEntryRow.qml  # Egyetlen értesítés sor akciógombokkal
 │   │
 │   ├── media/
 │   │   ├── MediaPopup.qml
@@ -92,6 +97,19 @@ vellum_shell/
 │   │
 │   ├── bluetooth/
 │   │   └── BluetoothPopup.qml
+│   │
+│   ├── privacy/
+│   │   └── PrivacyPopup.qml          # Mikrofont/kamerát használó appok listája
+│   │
+│   ├── removable/
+│   │   └── RemovableDevicePopup.qml  # Mount, unmount, megnyitás és leválasztás
+│   │
+│   ├── network/
+│   │   ├── ConnectivityPopup.qml     # Közös Wi-Fi/VPN panel fülekkel
+│   │   └── NetworkPanel.qml          # Wi-Fi fül tartalma
+│   │
+│   ├── vpn/
+│   │   └── VpnPanel.qml              # Proton VPN fül tartalma
 │   │
 │   ├── weather/
 │   │   ├── WeatherController.qml
@@ -149,6 +167,7 @@ vellum_shell/
 │   ├── matugen-theme
 │   ├── weather-location
 │   ├── floating-terminal
+│   ├── camera-usage
 │   ├── launch-wifi
 │   ├── launch-bluetooth
 │   ├── keybindings-list
@@ -243,6 +262,7 @@ Az alsóbb réteg nem importálhat magasabb réteget. A `core/` nem importál `f
 - `app/PopupCoordinator.qml` és `app/ShellIpc.qml`.
 - `features/bar/` teljes topbar felbontás.
 - Notification controller, toast és center felbontás.
+- Értesítés csoportosítás alkalmazás szerint (`NotificationGroup.qml`, `NotificationEntryRow.qml`).
 - Media, weather, system stats és calendar card felbontás.
 - Launcher frecency és desktop ikon resolver.
 - Clipboard backend és perzisztencia controller.

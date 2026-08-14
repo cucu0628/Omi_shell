@@ -53,7 +53,11 @@ Item {
             + "trap \"rm -f '" + controller.configPath + "'\" EXIT\n"
             + "exec cava -p '" + controller.configPath + "' < /dev/null"]
 
-        onRunningChanged: if (!running) controller.values = [0, 0, 0, 0, 0, 0]
+        onRunningChanged: {
+            if (running) return
+            controller.values = [0, 0, 0, 0, 0, 0]
+            Qt.callLater(controller.syncProcess)
+        }
 
         stdout: SplitParser {
             splitMarker: "\n"

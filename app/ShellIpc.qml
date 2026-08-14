@@ -107,6 +107,10 @@ Item {
         function toggle(): void { coordinator.toggleNotifications(focusedScreenProvider()) }
         function dnd(): void { coordinator.toggleNotificationsDnd() }
         function close(): void { coordinator.setNotificationsOpen(false) }
+        function clear(): void { coordinator.clearNotifications() }
+        function grouping(): void { coordinator.toggleNotificationsGrouping() }
+        function expand(): void { coordinator.setNotificationGroupsExpanded(true) }
+        function collapse(): void { coordinator.setNotificationGroupsExpanded(false) }
     }
 
     IpcHandler {
@@ -142,6 +146,14 @@ Item {
         function toggle(): void { coordinator.toggleBluetooth(coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider()) }
         function open(): void { coordinator.setBluetoothOpen(true, coordinator.menu.loaded ? coordinator.menu.screen : focusedScreenProvider()) }
         function close(): void { coordinator.setBluetoothOpen(false) }
+    }
+
+    IpcHandler {
+        target: "removable"
+
+        function toggle(): void { coordinator.toggleRemovable(focusedScreenProvider()) }
+        function open(): void { coordinator.setRemovableOpen(true, focusedScreenProvider()) }
+        function close(): void { coordinator.setRemovableOpen(false) }
     }
 
     IpcHandler {

@@ -4,7 +4,7 @@ set -euo pipefail
 base="$HOME/.config/quickshell/vellum_shell"
 source_file=${1:-}
 output_dir="$HOME/.config/btop/themes"
-output="$output_dir/vellum_shell.theme"
+output="$output_dir/vellum.theme"
 
 if [[ ! -r $source_file ]]; then
   current=""
@@ -19,6 +19,13 @@ foreground="#cdd6f4"
 accent="#89b4fa"
 surface="#181825"
 muted="#9399b2"
+selection=""
+red=""
+yellow=""
+orange=""
+green=""
+cyan=""
+magenta=""
 
 while IFS='=' read -r key value; do
   key=${key//[[:space:]]/}
@@ -29,6 +36,13 @@ while IFS='=' read -r key value; do
     ACCENT|BORDER_FOREGROUND) accent=$value ;;
     SURFACE) surface=$value ;;
     MUTED) muted=$value ;;
+    SELECTION) selection=$value ;;
+    RED) red=$value ;;
+    YELLOW) yellow=$value ;;
+    ORANGE) orange=$value ;;
+    GREEN) green=$value ;;
+    CYAN) cyan=$value ;;
+    MAGENTA) magenta=$value ;;
   esac
 done < "$source_file"
 
@@ -54,12 +68,13 @@ mix() {
 }
 
 graph_text=$(mix "$muted" "$foreground" 70)
-cool=$(mix "$accent" "$foreground" 75)
-green=$(mix "#a6e3a1" "$accent" 70)
-yellow=$(mix "#f9e2af" "$accent" 70)
-orange=$(mix "#fab387" "$accent" 70)
-red=$(mix "#f38ba8" "$accent" 70)
-purple=$(mix "#cba6f7" "$accent" 70)
+valid_color "$selection" || selection="$accent"
+valid_color "$cyan" || cyan=$(mix "$accent" "$foreground" 75)
+valid_color "$green" || green=$(mix "#a6e3a1" "$accent" 70)
+valid_color "$yellow" || yellow=$(mix "#f9e2af" "$accent" 70)
+valid_color "$orange" || orange=$(mix "#fab387" "$accent" 70)
+valid_color "$red" || red=$(mix "#f38ba8" "$accent" 70)
+valid_color "$magenta" || magenta=$(mix "#cba6f7" "$accent" 70)
 
 mkdir -p "$output_dir"
 tmp=$(mktemp "$output_dir/.vellum_shell.theme.XXXXXX")
@@ -72,11 +87,11 @@ theme[main_bg]="$background"
 theme[main_fg]="$foreground"
 theme[title]="$accent"
 theme[hi_fg]="$accent"
-theme[selected_bg]="$accent"
-theme[selected_fg]="$background"
+theme[selected_bg]="$selection"
+theme[selected_fg]="$foreground"
 theme[inactive_fg]="$muted"
 theme[graph_text]="$graph_text"
-theme[proc_misc]="$cool"
+theme[proc_misc]="$cyan"
 
 theme[cpu_box]="$accent"
 theme[mem_box]="$muted"
@@ -93,15 +108,15 @@ theme[cpu_mid]="$yellow"
 theme[cpu_end]="$red"
 
 theme[free_start]="$green"
-theme[free_mid]="$cool"
+theme[free_mid]="$cyan"
 theme[free_end]="$accent"
 
-theme[cached_start]="$cool"
+theme[cached_start]="$cyan"
 theme[cached_mid]="$accent"
-theme[cached_end]="$purple"
+theme[cached_end]="$magenta"
 
 theme[available_start]="$accent"
-theme[available_mid]="$cool"
+theme[available_mid]="$cyan"
 theme[available_end]="$foreground"
 
 theme[used_start]="$yellow"
@@ -109,11 +124,11 @@ theme[used_mid]="$orange"
 theme[used_end]="$red"
 
 theme[download_start]="$green"
-theme[download_mid]="$cool"
+theme[download_mid]="$cyan"
 theme[download_end]="$accent"
 
 theme[upload_start]="$accent"
-theme[upload_mid]="$purple"
+theme[upload_mid]="$magenta"
 theme[upload_end]="$red"
 EOF
 

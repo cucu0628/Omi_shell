@@ -19,9 +19,8 @@ PanelWindow {
     property int audioVolumePercent: 0
     property bool vpnActive: false
     property string vpnName: ""
-    property bool vpnPopupOpen: false
     property string networkType: "offline"
-    property bool networkPopupOpen: false
+    property bool connectivityPopupOpen: false
     property bool bluetoothAvailable: false
     property bool bluetoothEnabled: false
     property bool bluetoothConnected: false
@@ -35,15 +34,23 @@ PanelWindow {
     property bool notificationsMenuOpened: false
     property bool aiPopupOpen: false
     property bool trayMenuOpen: false
+    property bool micActive: false
+    property bool cameraActive: false
+    property bool privacyPopupOpen: false
+    property int removableDeviceCount: 0
+    property int mountedRemovableCount: 0
+    property bool removablePopupOpen: false
 
     signal menuToggleRequested()
     signal centerToggleRequested()
     signal audioToggleRequested()
-    signal networkToggleRequested()
+    signal privacyToggleRequested()
+    signal connectivityToggleRequested()
+    signal connectivityVpnRequested()
     signal bluetoothToggleRequested()
-    signal vpnToggleRequested()
     signal notificationsToggleRequested()
     signal aiToggleRequested()
+    signal removableToggleRequested()
     signal launchCommand(var command)
     signal audioVolumeStepRequested(bool increase)
     signal trayMenuRequested(var model, real globalX)
@@ -66,13 +73,27 @@ PanelWindow {
             opacity: 0.55
         }
 
-        WorkspaceGroup {
+        Row {
             anchors.left: parent.left
-            theme: root.theme
-            visibleWorkspaceIds: root.visibleWorkspaceIds
-            occupiedWorkspaceIds: root.occupiedWorkspaceIds
-            menuOpen: root.menuOpen
-            onMenuClicked: root.menuToggleRequested()
+            height: parent.height
+            spacing: 6
+
+            WorkspaceGroup {
+                theme: root.theme
+                visibleWorkspaceIds: root.visibleWorkspaceIds
+                occupiedWorkspaceIds: root.occupiedWorkspaceIds
+                menuOpen: root.menuOpen
+                onMenuClicked: root.menuToggleRequested()
+            }
+
+            PrivacyStatusItem {
+                theme: root.theme
+                barHeight: root.barHeight
+                micActive: root.micActive
+                cameraActive: root.cameraActive
+                popupOpen: root.privacyPopupOpen
+                onClicked: root.privacyToggleRequested()
+            }
         }
 
         CenterClock {
@@ -97,11 +118,15 @@ PanelWindow {
                 onContextMenuRequested: (model, globalX) => root.trayMenuRequested(model, globalX)
             }
 
-            WifiStatusItem {
+            ConnectivityStatusItem {
                 theme: root.theme
+                barHeight: root.barHeight
                 connectionType: root.networkType
-                popupOpen: root.networkPopupOpen
-                onClicked: root.networkToggleRequested()
+                vpnActive: root.vpnActive
+                vpnName: root.vpnName
+                popupOpen: root.connectivityPopupOpen
+                onClicked: root.connectivityToggleRequested()
+                onVpnRequested: root.connectivityVpnRequested()
             }
 
             BluetoothStatusItem {
@@ -113,13 +138,12 @@ PanelWindow {
                 onClicked: root.bluetoothToggleRequested()
             }
 
-            VpnStatusItem {
+            RemovableDeviceStatusItem {
                 theme: root.theme
-                barHeight: root.barHeight
-                active: root.vpnActive
-                vpnName: root.vpnName
-                popupOpen: root.vpnPopupOpen
-                onClicked: root.vpnToggleRequested()
+                deviceCount: root.removableDeviceCount
+                mountedCount: root.mountedRemovableCount
+                popupOpen: root.removablePopupOpen
+                onClicked: root.removableToggleRequested()
             }
 
             AudioStatusItem {

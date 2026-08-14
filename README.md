@@ -25,8 +25,11 @@ Kitty, and a custom Hyprland Lua setup.
   and emoji search (`:`).
 - Clipboard history with text and image previews, activation, and deletion.
 - Notification server with toasts, history, actions, unread state, and DND.
+- Notification center grouping per application, with collapsible groups,
+  per-group unread counts, and per-group clearing.
 - Media dashboard with playback, weather, calendar, and system statistics.
 - PipeWire audio mixer, NetworkManager controls, volume OSD, and Polkit agent.
+- Removable-device popup with mount, unmount, open, and safe power-off actions.
 - Appearance Studio for matching shell themes and wallpapers, including optional
   Matugen-generated palettes.
 - Screenshot modes for smart selection, windows, workspaces, and regions.
@@ -70,6 +73,7 @@ require the corresponding command:
 | Package management | `pacman`; `paru` or `yay` for AUR packages |
 | Power profiles | `powerprofilesctl` |
 | Bluetooth settings | `blueman-manager`, Blueberry, or KDE System Settings |
+| Removable devices | `util-linux`, `udisks2`, `xdg-utils` |
 
 The package helpers are Arch-specific. The generated Hyprland colors and a few
 system actions use `hl.config(...)` and `hl.dsp.*`, which belong to the author's
@@ -150,9 +154,10 @@ quickshell ipc --path ~/.config/quickshell/vellum_shell/shell.qml call TARGET ME
 | `clipboard` | `toggle`, `open`, `close` |
 | `style` | `theme`, `wallpaper`, `close` |
 | `power` | `toggle`, `open`, `close` |
-| `notifications` | `toggle`, `dnd`, `close` |
+| `notifications` | `toggle`, `dnd`, `close`, `clear`, `grouping`, `expand`, `collapse` |
 | `audio` | `toggle`, `open`, `close` |
 | `network` | `toggle`, `open`, `close` |
+| `removable` | `toggle`, `open`, `close` |
 | `about` | `toggle`, `open`, `close` |
 | `screenshot` | `capture`, `window`, `workspace`, `region` |
 

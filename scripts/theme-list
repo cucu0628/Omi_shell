@@ -24,6 +24,7 @@ emit_theme() {
       ACCENT|BORDER_FOREGROUND) accent=$value ;;
       SURFACE) surface=$value ;;
       MUTED) muted=$value ;;
+      LIGHT_FOREGROUND) muted=$value ;;
       ICON_THEME) icon_theme=$value ;;
     esac
     case "$line" in

@@ -2,7 +2,7 @@
 
 set -eu
 
-base=${XDG_CONFIG_HOME:-"$HOME/.config"}/quickshell/omi_shell
+base=${XDG_CONFIG_HOME:-"$HOME/.config"}/quickshell/vellum_shell
 config="$base/lockscreen-monitor"
 
 monitors() {

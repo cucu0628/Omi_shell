@@ -18,6 +18,10 @@ foreground="#cdd6f4"
 accent="#89b4fa"
 surface="#181825"
 muted="#9399b2"
+selection=""
+dark_background=""
+lighter_background=""
+red=""
 
 while IFS='=' read -r key value; do
   key=${key//[[:space:]]/}
@@ -28,6 +32,10 @@ while IFS='=' read -r key value; do
     ACCENT|BORDER_FOREGROUND) accent=$value ;;
     SURFACE) surface=$value ;;
     MUTED) muted=$value ;;
+    SELECTION) selection=$value ;;
+    DARK_BACKGROUND) dark_background=$value ;;
+    LIGHTER_BACKGROUND) lighter_background=$value ;;
+    RED) red=$value ;;
   esac
 done < "$source_file"
 
@@ -52,7 +60,12 @@ mix() {
   printf '#%s' "$result"
 }
 
-error_background=$(mix "#ff5449" "$foreground" 55)
+valid_color "$selection" || selection="$accent"
+valid_color "$dark_background" || dark_background="$background"
+valid_color "$lighter_background" || lighter_background="$surface"
+valid_color "$red" || red="#ff5449"
+
+error_background=$(mix "$red" "$foreground" 55)
 error_foreground=$(mix "#690005" "$background" 70)
 accent_hex=${accent#\#}
 accent_r=$((16#${accent_hex:0:2}))
@@ -79,23 +92,25 @@ trap 'rm -f "$tmp"' EXIT
   printf '@define-color accent_bg_color %s;\n' "$accent"
   printf '@define-color window_bg_color %s;\n' "$background"
   printf '@define-color window_fg_color %s;\n' "$foreground"
-  printf '@define-color view_bg_color %s;\n' "$background"
+  printf '@define-color view_bg_color %s;\n' "$dark_background"
   printf '@define-color view_fg_color %s;\n' "$foreground"
   printf '@define-color headerbar_bg_color %s;\n' "$background"
   printf '@define-color headerbar_fg_color %s;\n' "$foreground"
-  printf '@define-color sidebar_bg_color %s;\n' "$surface"
+  printf '@define-color sidebar_bg_color %s;\n' "$lighter_background"
   printf '@define-color sidebar_fg_color %s;\n' "$foreground"
   printf '@define-color secondary_sidebar_bg_color %s;\n' "$background"
   printf '@define-color secondary_sidebar_fg_color %s;\n' "$foreground"
-  printf '@define-color card_bg_color %s;\n' "$surface"
+  printf '@define-color card_bg_color %s;\n' "$lighter_background"
   printf '@define-color card_fg_color %s;\n' "$foreground"
   printf '@define-color overview_bg_color %s;\n' "$surface"
   printf '@define-color overview_fg_color %s;\n' "$foreground"
-  printf '@define-color popover_bg_color %s;\n' "$surface"
+  printf '@define-color popover_bg_color %s;\n' "$lighter_background"
   printf '@define-color popover_fg_color %s;\n' "$foreground"
   printf '@define-color dialog_bg_color %s;\n' "$background"
   printf '@define-color dialog_fg_color %s;\n' "$foreground"
   printf '@define-color borders %s;\n' "$muted"
+  printf '@define-color theme_selected_bg_color %s;\n' "$selection"
+  printf '@define-color theme_selected_fg_color %s;\n' "$foreground"
   printf '\n/* Backdrop/unfocused states. */\n'
   printf '@define-color headerbar_backdrop_color @window_bg_color;\n'
   printf '@define-color sidebar_backdrop_color @sidebar_bg_color;\n'

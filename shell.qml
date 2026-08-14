@@ -20,9 +20,10 @@ import "features/network" as NetworkFeature
 import "features/notifications" as NotificationFeature
 import "features/osd" as OsdFeature
 import "features/polkit" as PolkitFeature
+import "features/privacy" as PrivacyFeature
+import "features/removable" as RemovableFeature
 import "features/screenshot" as ScreenshotFeature
 import "features/tray" as TrayFeature
-import "features/vpn" as VpnFeature
 
 ShellRoot {
     id: shellRoot
@@ -81,6 +82,16 @@ ShellRoot {
 
     Core.BatteryStatusController {
         id: batteryStatusController
+    }
+
+    Core.PrivacyController {
+        id: privacyController
+        shellDir: shellRoot.shellDir
+    }
+
+    Core.RemovableDeviceController {
+        id: removableDeviceController
+        onDeviceAdded: popupCoordinator.setRemovableOpen(true, shellRoot.focusedScreen())
     }
 
     Core.MprisController {
@@ -224,12 +235,27 @@ ShellRoot {
     }
 
     App.LazyPopup {
-        id: networkPopup
+        id: connectivityPopup
+        mode: "network"
         popupComponent: Component {
-            NetworkFeature.NetworkPopup {
+            NetworkFeature.ConnectivityPopup {
                 theme: shellRoot.shellTheme
                 statusController: networkStatusController
-                screen: networkPopup.screen
+                vpnCli: vpnController
+                screen: connectivityPopup.screen
+                currentTab: connectivityPopup.mode === "vpn" ? 1 : 0
+                onCurrentTabChanged: connectivityPopup.mode = currentTab === 1 ? "vpn" : "network"
+            }
+        }
+    }
+
+    App.LazyPopup {
+        id: privacyPopup
+        popupComponent: Component {
+            PrivacyFeature.PrivacyPopup {
+                theme: shellRoot.shellTheme
+                statusController: privacyController
+                screen: privacyPopup.screen
             }
         }
     }
@@ -246,12 +272,12 @@ ShellRoot {
     }
 
     App.LazyPopup {
-        id: vpnPopup
+        id: removablePopup
         popupComponent: Component {
-            VpnFeature.VpnPopup {
+            RemovableFeature.RemovableDevicePopup {
                 theme: shellRoot.shellTheme
-                controller: vpnController
-                screen: vpnPopup.screen
+                deviceController: removableDeviceController
+                screen: removablePopup.screen
             }
         }
     }
@@ -308,9 +334,10 @@ ShellRoot {
         themeSwitcher: themeSwitcher
         mediaPopup: mediaPopup
         audioPopup: audioPopup
-        networkPopup: networkPopup
+        connectivityPopup: connectivityPopup
         bluetoothPopup: bluetoothPopup
-        vpnPopup: vpnPopup
+        removablePopup: removablePopup
+        privacyPopup: privacyPopup
         aiPopup: aiPopup
         vpnCli: vpnController
         aboutPopup: aboutPopup
@@ -368,13 +395,15 @@ ShellRoot {
             audioVolumePercent: shellRoot.audioVolumePercent
             vpnActive: shellRoot.vpnActive
             vpnName: shellRoot.vpnName
-            vpnPopupOpen: vpnPopup.opened && vpnPopup.screen === targetScreen
             networkType: shellRoot.networkType
-            networkPopupOpen: networkPopup.opened && networkPopup.screen === targetScreen
+            connectivityPopupOpen: connectivityPopup.opened && connectivityPopup.screen === targetScreen
             bluetoothAvailable: bluetoothStatusController.available
             bluetoothEnabled: bluetoothStatusController.enabled
             bluetoothConnected: bluetoothStatusController.connected
             bluetoothPopupOpen: bluetoothPopup.opened && bluetoothPopup.screen === targetScreen
+            removableDeviceCount: removableDeviceController.deviceCount
+            mountedRemovableCount: removableDeviceController.mountedCount
+            removablePopupOpen: removablePopup.opened && removablePopup.screen === targetScreen
             batteryAvailable: batteryStatusController.available
             batteryPercentage: batteryStatusController.percentage
             batteryCharging: batteryStatusController.charging
@@ -384,13 +413,18 @@ ShellRoot {
             notificationsMenuOpened: notifications.menuOpened
             aiPopupOpen: aiPopup.opened && aiPopup.screen === targetScreen
             trayMenuOpen: trayMenu.visible && trayMenu.screen === targetScreen
+            micActive: privacyController.micActive
+            cameraActive: privacyController.cameraActive
+            privacyPopupOpen: privacyPopup.opened && privacyPopup.screen === targetScreen
 
             onMenuToggleRequested: popupCoordinator.toggleMenu(targetScreen)
             onCenterToggleRequested: popupCoordinator.toggleCenterPopup(targetScreen)
             onAudioToggleRequested: popupCoordinator.toggleAudio(targetScreen)
-            onNetworkToggleRequested: popupCoordinator.toggleNetwork(targetScreen)
+            onPrivacyToggleRequested: popupCoordinator.togglePrivacy(targetScreen)
+            onConnectivityToggleRequested: popupCoordinator.toggleConnectivity(connectivityPopup.mode, targetScreen)
+            onConnectivityVpnRequested: popupCoordinator.toggleConnectivity("vpn", targetScreen)
             onBluetoothToggleRequested: popupCoordinator.toggleBluetooth(targetScreen)
-            onVpnToggleRequested: popupCoordinator.toggleVpn(targetScreen)
+            onRemovableToggleRequested: popupCoordinator.toggleRemovable(targetScreen)
             onNotificationsToggleRequested: popupCoordinator.toggleNotifications(targetScreen)
             onAiToggleRequested: popupCoordinator.toggleAi(targetScreen)
             onLaunchCommand: command => launchBarCommand(command)

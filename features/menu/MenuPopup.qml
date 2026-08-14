@@ -43,19 +43,15 @@ PanelWindow {
         "command": "quickshell ipc --path " + shellPath + " call style wallpaper",
         "path": "Style / Appearance Studio"
     }, {
-        "name": "Network",
-        "icon": "",
-        "command": "quickshell ipc --path " + shellPath + " call network toggle",
-        "path": "Setup"
-    }, {
         "name": "Lock",
         "icon": "",
         "command": "quickshell ipc --path " + shellPath + " call lock lock",
         "path": "System"
     }, {
-        "name": "Power",
+        "name": "Shutdown",
         "icon": "󰐥",
-        "sub": menuDataSource.powerActions,
+        "command": "systemctl poweroff",
+        "confirm": true,
         "path": "System"
     }]
     readonly property var searchResults: buildSearchResults(searchQuery)

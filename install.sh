@@ -60,6 +60,8 @@ repo_packages=(
   slurp
   sudo
   ttf-nerd-fonts-symbols-mono
+  udisks2
+  util-linux
   wireplumber
   wl-clipboard
   xdg-desktop-portal-gtk

@@ -16,6 +16,9 @@ Item {
     property int nextEntryId: 1
     property int currentEntryId: -1
     property int historyLimit: 100
+    property bool groupingEnabled: true
+    property var groups: []
+    property var expandedGroups: ({})
     readonly property bool hasToast: toastVisible && currentNotification !== null
 
     width: 0
@@ -31,6 +34,101 @@ Item {
             if (history[i].id === entryId) return history[i]
         }
         return null
+    }
+
+    function groupKeyFor(entry) {
+        if (!entry) return "notification"
+        if (!groupingEnabled) return "entry-" + entry.id
+        var key = (entry.appName || "").toString().toLowerCase().trim()
+        return key === "" ? "notification" : key
+    }
+
+    function rebuildGroups() {
+        var built = []
+        var index = ({})
+
+        for (var i = 0; i < history.length; i++) {
+            var entry = history[i]
+            var key = groupKeyFor(entry)
+            var group = index[key]
+            if (!group) {
+                group = {
+                    key: key,
+                    appName: entry.appName || "Notification",
+                    icon: entry.icon,
+                    count: 0,
+                    unread: 0,
+                    critical: false,
+                    time: entry.time,
+                    expanded: expandedGroups[key] === true,
+                    entries: []
+                }
+                index[key] = group
+                built.push(group)
+            }
+            group.entries.push(entry)
+            group.count++
+            if (entry.unread) group.unread++
+            if (entry.critical) group.critical = true
+            if (group.icon === "" && entry.icon !== "") group.icon = entry.icon
+        }
+
+        var nextExpanded = ({})
+        var expandedChanged = false
+        for (var g = 0; g < built.length; g++) {
+            if (expandedGroups[built[g].key] === true) nextExpanded[built[g].key] = true
+        }
+        for (var stale in expandedGroups) {
+            if (nextExpanded[stale] !== true) expandedChanged = true
+        }
+        if (expandedChanged) expandedGroups = nextExpanded
+
+        groups = built
+    }
+
+    function setGroupExpanded(key, expanded) {
+        var next = ({})
+        for (var existing in expandedGroups) next[existing] = expandedGroups[existing]
+        if (expanded) next[key] = true
+        else delete next[key]
+        expandedGroups = next
+        rebuildGroups()
+    }
+
+    function toggleGroup(key) {
+        setGroupExpanded(key, expandedGroups[key] !== true)
+    }
+
+    function setAllGroupsExpanded(expanded) {
+        var next = ({})
+        if (expanded) {
+            for (var i = 0; i < groups.length; i++) {
+                if (groups[i].count > 1) next[groups[i].key] = true
+            }
+        }
+        expandedGroups = next
+        rebuildGroups()
+    }
+
+    function removeGroup(key) {
+        var nextHistory = []
+        var removedNotifications = []
+
+        for (var i = 0; i < history.length; i++) {
+            var entry = history[i]
+            if (groupKeyFor(entry) === key) {
+                if (entry.unread) unreadCount = Math.max(0, unreadCount - 1)
+                removeQueuedEntry(entry.id)
+                if (currentEntryId === entry.id) clearCurrentToast()
+                if (entry.notification) removedNotifications.push(entry.notification)
+            } else {
+                nextHistory.push(entry)
+            }
+        }
+
+        history = nextHistory
+        for (var dismissed = 0; dismissed < removedNotifications.length; dismissed++) removedNotifications[dismissed].dismiss()
+        showNextToast()
     }
 
     function removeQueuedEntry(entryId) {
@@ -288,6 +386,11 @@ Item {
         if (toastVisible) expireTimer.restart()
     }
 
+    onHistoryChanged: rebuildGroups()
+    onGroupingEnabledChanged: {
+        expandedGroups = ({})
+        rebuildGroups()
+    }
     onDndChanged: if (dnd) toastQueue = []
 
     NotificationServer {

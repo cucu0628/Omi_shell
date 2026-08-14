@@ -12,6 +12,8 @@ PanelWindow {
     property alias toastVisible: controller.toastVisible
     property alias menuOpened: controller.menuOpened
     property alias history: controller.history
+    property alias groups: controller.groups
+    property alias grouping: controller.groupingEnabled
     property alias unreadCount: controller.unreadCount
     readonly property alias hasToast: controller.hasToast
     readonly property bool menuExpanded: center.transitionActive
@@ -24,6 +26,14 @@ PanelWindow {
             toastAnimationReset.restart()
         }
         controller.setMenuOpen(open)
+    }
+
+    function clearHistory() {
+        controller.clearHistory()
+    }
+
+    function setAllGroupsExpanded(expanded) {
+        controller.setAllGroupsExpanded(expanded)
     }
 
     function toggleMenu(targetScreen) {
@@ -70,11 +80,15 @@ PanelWindow {
         opened: controller.menuOpened
         dnd: controller.dnd
         history: controller.history
+        groups: controller.groups
         onCloseRequested: controller.setMenuOpen(false)
         onDndToggleRequested: controller.dnd = !controller.dnd
         onClearRequested: controller.clearHistory()
         onItemDeleteRequested: entryId => controller.removeHistory(entryId, true)
         onItemActivated: entryId => controller.activateHistoryEntry(entryId, null)
         onItemActionRequested: (entryId, action) => controller.invokeHistoryAction(entryId, action)
+        onGroupToggleRequested: groupKey => controller.toggleGroup(groupKey)
+        onGroupClearRequested: groupKey => controller.removeGroup(groupKey)
+        onGroupsExpandRequested: expanded => controller.setAllGroupsExpanded(expanded)
     }
 }
